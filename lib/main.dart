@@ -13,16 +13,57 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:typed_data';
+import 'package:lume/pages/onboarding_page.dart';
+import 'package:lume/pages/preconfig_page.dart';
 
 void main() async {
+  // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  await ThemeManager.init();
 
-  // Configurações de inicialização de notificações
+  try {
+    // Initialize theme manager
+    await ThemeManager.init();
+
+    // Initialize SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final bool hasAcceptedTerms = prefs.getBool('hasAcceptedTerms') ?? false;
+    final bool hasCompletedPreConfig =
+        prefs.getBool('hasCompletedPreConfig') ?? false;
+
+    // Initialize notifications
+    await _initializeNotifications();
+
+    // Initialize Hive database
+    await _initializeHive();
+
+    // Initialize managers
+    await NotesManager.init();
+    await TodosManager.init();
+
+    runApp(
+      MyApp(
+        hasAcceptedTerms: hasAcceptedTerms,
+        hasCompletedPreConfig: hasCompletedPreConfig,
+      ),
+    );
+  } catch (e) {
+    debugPrint('Error during initialization: $e');
+    // Fallback to a simple error widget if initialization fails
+    runApp(
+      const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text('Failed to initialize app. Please restart.'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _initializeNotifications() async {
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  await SharedPreferences.getInstance();
 
   const DarwinInitializationSettings initializationSettingsIOS =
       DarwinInitializationSettings(
@@ -42,25 +83,11 @@ void main() async {
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveNotificationResponse: (NotificationResponse response) async {
-      if (response.payload != null) {
-        debugPrint('Notification payload: ${response.payload}');
-      }
+      debugPrint('Notification payload: ${response.payload}');
     },
   );
 
-  // Solicitar permissões melhorado
   await _requestNotificationPermissions(flutterLocalNotificationsPlugin);
-
-  // Inicialização do Hive
-  await Hive.initFlutter();
-  Hive.registerAdapter(NoteAdapter());
-  Hive.registerAdapter(TodoItemAdapter());
-  await Hive.openBox<TodoItem>('todos');
-
-  await NotesManager.init();
-  await TodosManager.init();
-
-  runApp(const MyApp());
 }
 
 Future<void> _requestNotificationPermissions(
@@ -68,23 +95,23 @@ Future<void> _requestNotificationPermissions(
 ) async {
   try {
     if (Platform.isAndroid) {
-      // Solicitar permissão para ignorar DND (Android 6.0+)
+      // Request battery optimization permission
       final notificationPolicyStatus =
           await Permission.ignoreBatteryOptimizations.request();
       if (!notificationPolicyStatus.isGranted) {
-        debugPrint('Permissão para ignorar DND não concedida');
+        debugPrint('Battery optimization permission not granted');
       }
 
-      // Solicitar permissões padrão de notificação
-      final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
+      final androidPlugin =
           flutterLocalNotificationsPlugin
               .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin
               >();
 
+      // Request notification permissions
       await androidPlugin?.requestNotificationsPermission();
 
-      // Criar canal com alta prioridade
+      // Create high priority notification channel
       await androidPlugin?.createNotificationChannel(
         AndroidNotificationChannel(
           'todo_channel',
@@ -92,14 +119,11 @@ Future<void> _requestNotificationPermissions(
           description: 'Notifications for your scheduled tasks',
           importance: Importance.max,
           playSound: true,
-          sound: RawResourceAndroidNotificationSound(
-            'alarm',
-          ), // Adicione um som personalizado
+          sound: RawResourceAndroidNotificationSound('alarm'),
           enableVibration: true,
           vibrationPattern: Int64List.fromList(<int>[0, 500, 250, 500]),
           bypassDnd: true,
-          audioAttributesUsage:
-              AudioAttributesUsage.alarm, // Define como alarme
+          audioAttributesUsage: AudioAttributesUsage.alarm,
         ),
       );
     } else if (Platform.isIOS) {
@@ -110,12 +134,26 @@ Future<void> _requestNotificationPermissions(
           ?.requestPermissions(alert: true, badge: true, sound: true);
     }
   } catch (e) {
-    debugPrint('Erro ao solicitar permissões: $e');
+    debugPrint('Error requesting notification permissions: $e');
   }
 }
 
+Future<void> _initializeHive() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(NoteAdapter());
+  Hive.registerAdapter(TodoItemAdapter());
+  await Hive.openBox<TodoItem>('todos');
+}
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool hasAcceptedTerms;
+  final bool hasCompletedPreConfig;
+
+  const MyApp({
+    super.key,
+    required this.hasAcceptedTerms,
+    required this.hasCompletedPreConfig,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +162,8 @@ class MyApp extends StatelessWidget {
       builder: (context, themeMode, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: const HomePage(),
+          navigatorKey: MyApp.navigatorKey,
+          home: _getInitialPage(),
           theme: ThemeManager.getLightTheme(),
           darkTheme: ThemeManager.getDarkTheme(),
           themeMode: themeMode,
@@ -139,4 +178,49 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+
+  Widget _getInitialPage() {
+    if (!hasAcceptedTerms) {
+      return OnboardingPage(
+        onAccept: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('hasAcceptedTerms', true);
+
+          Navigator.of(MyApp.navigatorKey.currentContext!).pushReplacement(
+            MaterialPageRoute(
+              builder:
+                  (context) => PreConfigPage(
+                    onComplete: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('hasCompletedPreConfig', true);
+                      Navigator.of(
+                        MyApp.navigatorKey.currentContext!,
+                      ).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const HomePage(),
+                        ),
+                      );
+                    },
+                  ),
+            ),
+          );
+        },
+      );
+    } else if (!hasCompletedPreConfig) {
+      return PreConfigPage(
+        onComplete: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('hasCompletedPreConfig', true);
+          Navigator.of(MyApp.navigatorKey.currentContext!).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        },
+      );
+    } else {
+      return const HomePage();
+    }
+  }
+
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 }

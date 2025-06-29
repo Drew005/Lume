@@ -38,6 +38,7 @@ flutter_launcher_icons:
 dependencies:
   flutter:
     sdk: flutter
+    
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_tags: ^1.0.0-nullsafety.1
@@ -83,6 +84,8 @@ dependencies:
   image_cropper: ^9.1.0
   image: ^4.5.4
   flutter_quill_extensions: ^11.0.0
+
+  flutter_markdown_plus: ^1.0.3
   
 
 dev_dependencies:
@@ -109,6 +112,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/PRIVACY.md
+    - assets/TERMS.md
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
