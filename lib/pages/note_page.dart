@@ -472,7 +472,7 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
       child: Row(
         children: [
           Text(
-            DateFormat('MMMM d, y  HH:mm').format(_updatedAt),
+            DateFormat('d MMMM y   HH:mm', 'pt_BR').format(_updatedAt),
             style: TextStyle(color: Colors.grey[600], fontSize: 12),
           ),
           const Spacer(),

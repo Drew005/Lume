@@ -29,14 +29,18 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
             <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
+              android:name="com.google.firebase.messaging.default_notification_icon"
+              android:resource="@mipmap/ic_launcher"
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- android:resource="@style/NormalTheme"
+        android:name="io.flutter.embedding.android.NormalTheme"
+         -->
 
         <service
             android:name="com.dexterous.flutterlocalnotifications.ForegroundService"

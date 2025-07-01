@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:intl/intl.dart';
@@ -332,6 +333,8 @@ class _TodoPageState extends State<TodoPage>
           htmlFormatContentTitle: true,
           summaryText: 'Tarefa',
         ),
+        icon: '@mipmap/ic_launcher',
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         colorized: true,
       );
 
@@ -713,6 +716,7 @@ class _AddTodoBottomSheetState extends State<AddTodoBottomSheet> {
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting('pt_BR', null);
     _taskController = widget.taskController;
     _dueDateTime = widget.dueDateTime;
     _hasAlarm = widget.hasAlarm;
@@ -870,7 +874,7 @@ class _AddTodoBottomSheetState extends State<AddTodoBottomSheet> {
           title: Text(
             _dueDateTime == null
                 ? 'Adicionar lembrete'
-                : DateFormat('MMMM d, y HH:mm').format(_dueDateTime!),
+                : DateFormat('d MMMM y   HH:mm', 'pt_BR').format(_dueDateTime!),
           ),
           trailing:
               _dueDateTime != null
@@ -995,7 +999,10 @@ class TodoItemCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('MMMM d, y HH:mm').format(todo.dueDate!),
+                            DateFormat(
+                              'd MMMM y   HH:mm',
+                              'pt_BR',
+                            ).format(todo.dueDate!),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],

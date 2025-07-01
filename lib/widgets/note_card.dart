@@ -100,7 +100,10 @@ class NoteCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      DateFormat('MMMM d, y').format(note.updatedAt),
+                      DateFormat(
+                        'd MMMM y   HH:mm',
+                        'pt_BR',
+                      ).format(note.updatedAt),
                       style: TextStyle(
                         color:
                             isSelected

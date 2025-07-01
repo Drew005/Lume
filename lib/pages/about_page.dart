@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -108,7 +110,13 @@ class AboutPage extends StatelessWidget {
                       color: Colors.grey[600],
                       size: 16,
                     ),
-                    onTap: () => _launchUrl('https://seusite.com/termos'),
+                    onTap:
+                        () => _showMarkdownDialog(
+                          context,
+                          'assets/TERMS.md',
+                          'Termos de Uso',
+                        ),
+                    //_launchUrl('https://seusite.com/termos'),
                   ),
                   const Divider(height: 1, color: Colors.grey),
 
@@ -129,7 +137,13 @@ class AboutPage extends StatelessWidget {
                       color: Colors.grey[600],
                       size: 16,
                     ),
-                    onTap: () => _launchUrl('https://seusite.com/privacidade'),
+                    onTap:
+                        () => _showMarkdownDialog(
+                          context,
+                          'assets/PRIVACY.md',
+                          'Política de Privacidade',
+                        ),
+                    //_launchUrl('https://seusite.com/privacidade'),
                   ),
                 ],
               ),
@@ -151,7 +165,8 @@ class AboutPage extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.mail),
                   color: Theme.of(context).iconTheme.color,
-                  onPressed: () => _launchUrl('mailto:sla7070sla@gmail.com'),
+                  onPressed:
+                      () => _launchUrl('mailto:suporte.lume@protonmail.com'),
                 ),
               ],
             ),
@@ -178,5 +193,96 @@ class AboutPage extends StatelessWidget {
     } else {
       throw 'Não foi possível abrir $url';
     }
+  }
+
+  void _showMarkdownDialog(
+    BuildContext context,
+    String filePath,
+    String title,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.9,
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: FutureBuilder<String>(
+                    future: rootBundle.loadString(filePath),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Markdown(
+                            data: snapshot.data!,
+                            styleSheet: MarkdownStyleSheet.fromTheme(
+                              Theme.of(context),
+                            ).copyWith(
+                              p: TextStyle(
+                                fontSize: 14,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color,
+                                height: 1.5,
+                              ),
+                              h1: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge?.color,
+                              ),
+                              h2: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge?.color,
+                              ),
+                              a: TextStyle(color: ThemeManager.accentColor),
+                            ),
+                            shrinkWrap: false,
+                          ),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(
+                            'Erro ao carregar o conteúdo: ${snapshot.error}',
+                          ),
+                        );
+                      }
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  ),
+                ),
+                const Divider(height: 1),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Fechar'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

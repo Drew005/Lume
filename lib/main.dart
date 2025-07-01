@@ -16,27 +16,20 @@ import 'dart:typed_data';
 import 'package:lume/pages/onboarding_page.dart';
 import 'package:lume/pages/preconfig_page.dart';
 
+import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
+
 void main() async {
-  // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Initialize theme manager
     await ThemeManager.init();
-
-    // Initialize SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final bool hasAcceptedTerms = prefs.getBool('hasAcceptedTerms') ?? false;
     final bool hasCompletedPreConfig =
         prefs.getBool('hasCompletedPreConfig') ?? false;
 
-    // Initialize notifications
     await _initializeNotifications();
-
-    // Initialize Hive database
     await _initializeHive();
-
-    // Initialize managers
     await NotesManager.init();
     await TodosManager.init();
 
@@ -48,7 +41,6 @@ void main() async {
     );
   } catch (e) {
     debugPrint('Error during initialization: $e');
-    // Fallback to a simple error widget if initialization fails
     runApp(
       const MaterialApp(
         home: Scaffold(
@@ -124,6 +116,8 @@ Future<void> _requestNotificationPermissions(
           vibrationPattern: Int64List.fromList(<int>[0, 500, 250, 500]),
           bypassDnd: true,
           audioAttributesUsage: AudioAttributesUsage.alarm,
+          ledColor: ThemeManager.accentColor,
+          showBadge: true,
         ),
       );
     } else if (Platform.isIOS) {
@@ -148,12 +142,14 @@ Future<void> _initializeHive() async {
 class MyApp extends StatelessWidget {
   final bool hasAcceptedTerms;
   final bool hasCompletedPreConfig;
+  final Future<SharedPreferences> _prefsFuture;
 
-  const MyApp({
-    super.key,
+  MyApp({
+    Key? key, // Também atualizei para Key? para manter consistência
     required this.hasAcceptedTerms,
     required this.hasCompletedPreConfig,
-  });
+  }) : _prefsFuture = SharedPreferences.getInstance(),
+       super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +159,46 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           navigatorKey: MyApp.navigatorKey,
-          home: _getInitialPage(),
+          home: FlutterSplashScreen.fadeIn(
+            backgroundColor: ThemeManager.accentColor.withOpacity(0.1),
+            duration: const Duration(seconds: 3),
+            onInit: () async {
+              debugPrint("SplashScreen Init");
+            },
+            onEnd: () async {
+              debugPrint("SplashScreen End");
+            },
+            childWidget: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Substitua pelo seu GIF ou imagem
+                  ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      ThemeManager.accentColor,
+                      BlendMode.srcIn,
+                    ),
+                    child: Image.asset('assets/splash/cat.gif', height: 150),
+                  ),
+                  const SizedBox(height: 20),
+                  //CircularProgressIndicator(
+                  //  valueColor: AlwaysStoppedAnimation<Color>(
+                  //    ThemeManager.accentColor,
+                  //  ),
+                  //),
+                ],
+              ),
+            ),
+            nextScreen: FutureBuilder<SharedPreferences>(
+              future: _prefsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const SizedBox(); // Placeholder enquanto carrega
+                }
+                return _getInitialPage();
+              },
+            ),
+          ),
           theme: ThemeManager.getLightTheme(),
           darkTheme: ThemeManager.getDarkTheme(),
           themeMode: themeMode,
@@ -185,7 +220,6 @@ class MyApp extends StatelessWidget {
         onAccept: () async {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('hasAcceptedTerms', true);
-
           Navigator.of(MyApp.navigatorKey.currentContext!).pushReplacement(
             MaterialPageRoute(
               builder:
