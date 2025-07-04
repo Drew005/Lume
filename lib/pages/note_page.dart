@@ -467,7 +467,7 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
 
   Widget _buildTitleField() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
       child: TextField(
         maxLines: null,
         maxLength: 300,

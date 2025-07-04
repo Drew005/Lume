@@ -189,7 +189,8 @@ class AboutPage extends StatelessWidget {
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      final result = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      print('Resultado do launch: $result');
     } else {
       throw 'Não foi possível abrir $url';
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:lume/pages/settings_page.dart';
 import 'package:lume/services/theme_manager.dart';
 import '../models/note.dart';
 import 'package:intl/intl.dart';
@@ -99,20 +100,29 @@ class NoteCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      DateFormat(
-                        'd MMMM y   HH:mm',
-                        'pt_BR',
-                      ).format(note.updatedAt),
-                      style: TextStyle(
-                        color:
-                            isSelected
-                                ? ThemeManager.accentColor.withOpacity(0.8)
-                                : isDark
-                                ? Colors.grey[500]
-                                : Colors.grey[700],
-                        fontSize: 12,
-                      ),
+                    ValueListenableBuilder(
+                      valueListenable: DateFormatManager.dateFormatNotifier,
+                      builder: (context, dateFormat, _) {
+                        return ValueListenableBuilder(
+                          valueListenable: DateFormatManager.timeFormatNotifier,
+                          builder: (context, timeFormat, _) {
+                            return Text(
+                              '${DateFormat(dateFormat, 'pt_BR').format(note.updatedAt)}   ${DateFormat(timeFormat, 'pt_BR').format(note.updatedAt)}',
+                              style: TextStyle(
+                                color:
+                                    isSelected
+                                        ? ThemeManager.accentColor.withOpacity(
+                                          0.8,
+                                        )
+                                        : isDark
+                                        ? Colors.grey[500]
+                                        : Colors.grey[700],
+                                fontSize: 12,
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),

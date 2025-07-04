@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lume/pages/about_page.dart';
+import 'package:lume/pages/blank_page.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -12,6 +14,21 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  String _formatName(String format) {
+    switch (format) {
+      case 'd \'de\' MMMM \'de\' y':
+        return 'Formato brasileiro';
+      case 'MMMM d, y':
+        return 'Formato internacional';
+      case 'HH:mm':
+        return '24h';
+      case 'h:mm a':
+        return 'AM/PM';
+      default:
+        return format;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -96,6 +113,53 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       ),
                       onTap: () => _showColorPicker(context),
+                    ),
+                    const Divider(height: 1, color: Colors.grey),
+
+                    ListTile(
+                      leading: Icon(
+                        CupertinoIcons.calendar,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                      title: Text(
+                        'Formato de data e hora',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.grey[900],
+                        ),
+                      ),
+                      subtitle: FutureBuilder(
+                        future: Future.wait([
+                          DateFormatManager.getDateFormat(),
+                          DateFormatManager.getTimeFormat(),
+                        ]),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            final dateFormat = snapshot.data![0];
+                            final timeFormat = snapshot.data![1];
+                            return Text(
+                              '${_formatName(dateFormat)} • ${_formatName(timeFormat)}',
+                              style: TextStyle(
+                                color:
+                                    isDark ? Colors.white70 : Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            );
+                          }
+                          return Text(
+                            'Carregando...',
+                            style: TextStyle(
+                              color: isDark ? Colors.white70 : Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          );
+                        },
+                      ),
+                      trailing: Icon(
+                        CupertinoIcons.chevron_right,
+                        color: Colors.grey[600],
+                        size: 16,
+                      ),
+                      onTap: () => _showDateTimeFormatSelector(context),
                     ),
                   ],
                 ),
@@ -666,5 +730,199 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
     );
+  }
+
+  void _showDateTimeFormatSelector(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Formato de Data e Hora',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Seção de formato de data
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, bottom: 8),
+                    child: Text(
+                      'Formato de Data',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.grey[700],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  FutureBuilder<String>(
+                    future: DateFormatManager.getDateFormat(),
+                    builder: (context, snapshot) {
+                      final currentFormat = snapshot.data ?? 'd MMMM y';
+                      return Column(
+                        children: [
+                          ListTile(
+                            title: Text('Formato brasileiro'),
+                            trailing: Radio<String>(
+                              value: 'd \'de\' MMMM \'de\' y',
+                              groupValue: currentFormat,
+                              onChanged: (value) async {
+                                if (value != null) {
+                                  await DateFormatManager.setDateFormat(value);
+                                  setModalState(() {});
+                                  setState(() {});
+                                }
+                              },
+                              activeColor: ThemeManager.accentColor,
+                            ),
+                          ),
+                          ListTile(
+                            title: Text('Formato internacional'),
+                            trailing: Radio<String>(
+                              value: 'MMMM d, y',
+                              groupValue: currentFormat,
+                              onChanged: (value) async {
+                                if (value != null) {
+                                  await DateFormatManager.setDateFormat(value);
+                                  setModalState(() {});
+                                  setState(() {});
+                                }
+                              },
+                              activeColor: ThemeManager.accentColor,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Seção de formato de hora
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, bottom: 8),
+                    child: Text(
+                      'Formato de Hora',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.grey[700],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  FutureBuilder<String>(
+                    future: DateFormatManager.getTimeFormat(),
+                    builder: (context, snapshot) {
+                      final currentFormat = snapshot.data ?? 'HH:mm';
+                      return Column(
+                        children: [
+                          ListTile(
+                            title: Text('24H'),
+                            trailing: Radio<String>(
+                              value: 'HH:mm',
+                              groupValue: currentFormat,
+                              onChanged: (value) async {
+                                if (value != null) {
+                                  await DateFormatManager.setTimeFormat(value);
+                                  setModalState(() {});
+                                  setState(() {});
+                                }
+                              },
+                              activeColor: ThemeManager.accentColor,
+                            ),
+                          ),
+                          ListTile(
+                            title: Text('AM/PM'),
+                            trailing: Radio<String>(
+                              value: 'h:mm a',
+                              groupValue: currentFormat,
+                              onChanged: (value) async {
+                                if (value != null) {
+                                  await DateFormatManager.setTimeFormat(value);
+                                  setModalState(() {});
+                                  setState(() {});
+                                }
+                              },
+                              activeColor: ThemeManager.accentColor,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class DateFormatManager {
+  static const String _dateFormatKey = 'dateFormat';
+  static const String _timeFormatKey = 'timeFormat';
+
+  static final ValueNotifier<String> dateFormatNotifier = ValueNotifier<String>(
+    'd MMMM y',
+  );
+  static final ValueNotifier<String> timeFormatNotifier = ValueNotifier<String>(
+    'HH:mm',
+  );
+
+  static Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    dateFormatNotifier.value = prefs.getString(_dateFormatKey) ?? 'd MMMM y';
+    timeFormatNotifier.value = prefs.getString(_timeFormatKey) ?? 'HH:mm';
+  }
+
+  static Future<void> setDateFormat(String format) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_dateFormatKey, format);
+    dateFormatNotifier.value = format;
+  }
+
+  static Future<void> setTimeFormat(String format) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_timeFormatKey, format);
+    timeFormatNotifier.value = format;
+  }
+
+  static Future<String> getDateFormat() async {
+    return dateFormatNotifier.value;
+  }
+
+  static Future<String> getTimeFormat() async {
+    return timeFormatNotifier.value;
   }
 }

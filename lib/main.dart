@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lume/models/note.dart';
 import 'package:lume/models/todo_item.dart';
 import 'package:lume/pages/home_page.dart';
+import 'package:lume/pages/settings_page.dart';
 import 'package:lume/services/notes_manager.dart';
 import 'package:lume/services/todos_manager.dart';
 import 'dart:io';
@@ -23,6 +24,7 @@ void main() async {
 
   try {
     await ThemeManager.init();
+    await DateFormatManager.init();
     final prefs = await SharedPreferences.getInstance();
     final bool hasAcceptedTerms = prefs.getBool('hasAcceptedTerms') ?? false;
     final bool hasCompletedPreConfig =
