@@ -18,6 +18,9 @@ import 'dart:typed_data';
 import 'package:lume/pages/onboarding_page.dart';
 import 'package:lume/pages/preconfig_page.dart';
 
+import 'package:lume/services/update_manager.dart' as update_manager;
+import 'package:lume/widgets/update_dialog.dart' as update_dialog;
+
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 
 void main() async {
@@ -91,7 +94,6 @@ Future<void> _requestNotificationPermissions(
 ) async {
   try {
     if (Platform.isAndroid) {
-      // Request battery optimization permission
       final notificationPolicyStatus =
           await Permission.ignoreBatteryOptimizations.request();
       if (!notificationPolicyStatus.isGranted) {
@@ -104,10 +106,8 @@ Future<void> _requestNotificationPermissions(
                 AndroidFlutterLocalNotificationsPlugin
               >();
 
-      // Request notification permissions
       await androidPlugin?.requestNotificationsPermission();
 
-      // Create high priority notification channel
       await androidPlugin?.createNotificationChannel(
         AndroidNotificationChannel(
           'todo_channel',
@@ -171,6 +171,7 @@ class MyApp extends StatelessWidget {
             },
             onEnd: () async {
               debugPrint("SplashScreen End");
+              _checkForUpdates(context);
             },
             childWidget: Center(
               child: Column(
@@ -256,6 +257,63 @@ class MyApp extends StatelessWidget {
       );
     } else {
       return const HomePage();
+    }
+  }
+
+  Future<void> _checkForUpdates(BuildContext context) async {
+    await Future.delayed(const Duration(seconds: 1));
+
+    try {
+      final updateInfo = await update_manager.UpdateManager.checkForUpdates();
+      if (updateInfo != null && context.mounted) {
+        update_dialog.UpdateDialogHelper.showUpdateDialog(
+          context,
+          update_dialog.UpdateInfo(
+            title: updateInfo.releaseName,
+            version: updateInfo.version,
+            description: updateInfo.releaseNotes,
+            features: [],
+            improvements: [],
+            bugFixes: [],
+            isForced: updateInfo.isForced,
+            downloadUrl: updateInfo.downloadUrl,
+            releaseDate: updateInfo.publishedAt,
+          ),
+        );
+      } else if (context.mounted) {
+        update_dialog.UpdateDialogHelper.showUpdateDialog(
+          context,
+          update_dialog.UpdateInfo(
+            title: 'Você está atualizado!',
+            version: 'Versão mais recente',
+            description:
+                'Seu aplicativo está na versão mais recente disponível.',
+            features: [],
+            improvements: [],
+            bugFixes: [],
+            isForced: false,
+            downloadUrl: '', // URL vazia para indicar que não há atualização
+            releaseDate: DateTime.now(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        update_dialog.UpdateDialogHelper.showUpdateDialog(
+          context,
+          update_dialog.UpdateInfo(
+            title: 'Erro ao verificar atualizações',
+            version: '',
+            description: 'Ocorreu um erro ao verificar atualizações: $e',
+            features: [],
+            improvements: [],
+            bugFixes: [],
+            isForced: false,
+            downloadUrl: '',
+            releaseDate: DateTime.now(),
+          ),
+        );
+      }
     }
   }
 

@@ -11,6 +11,7 @@ import 'package:lume/pages/settings_page.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:lume/services/notes_manager.dart';
+import 'package:translator/translator.dart';
 import '../models/note.dart';
 import 'package:flutter/rendering.dart';
 
@@ -661,7 +662,14 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
                 const SizedBox(width: 2),
                 _buildChecklistButton(),
                 const SizedBox(width: 2),
-                _buildTextAlignmentButton(), // Botão de alinhamento cíclico
+                _buildTextAlignmentButton(),
+                const SizedBox(width: 2),
+                IconButton(
+                  icon: const Icon(Icons.translate, size: 24),
+                  onPressed: _translateWithML,
+                  tooltip: 'Traduzir texto selecionado',
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 const SizedBox(width: 8),
               ],
             ),
@@ -669,6 +677,128 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  String _getSelectedText() {
+    if (!_contentController.selection.isValid) return '';
+
+    final fullText = _contentController.document.toPlainText();
+    final selection = _contentController.selection;
+
+    // Se já está selecionada uma palavra completa, retornar como está
+    if (selection.start != selection.end) {
+      return fullText.substring(selection.start, selection.end);
+    }
+
+    // Encontrar os limites da palavra atual
+    int wordStart = selection.start;
+    int wordEnd = selection.end;
+
+    // Expandir para trás até encontrar um caractere não-alfabético
+    while (wordStart > 0 &&
+        fullText[wordStart - 1].toLowerCase().contains(
+          RegExp(r'[a-záéíóúãõâêôç]'),
+        )) {
+      wordStart--;
+    }
+
+    // Expandir para frente até encontrar um caractere não-alfabético
+    while (wordEnd < fullText.length &&
+        fullText[wordEnd].toLowerCase().contains(RegExp(r'[a-záéíóúãõâêôç]'))) {
+      wordEnd++;
+    }
+
+    return fullText.substring(wordStart, wordEnd);
+  }
+
+  void _replaceSelectedText(String newText) {
+    if (!_contentController.selection.isValid) return;
+
+    // Obter o texto completo do documento
+    final fullText = _contentController.document.toPlainText();
+    final selection = _contentController.selection;
+
+    // Encontrar os limites da palavra atual
+    int wordStart = selection.start;
+    int wordEnd = selection.end;
+
+    // Expandir para trás até encontrar um caractere não-alfabético
+    while (wordStart > 0 &&
+        fullText[wordStart - 1].toLowerCase().contains(
+          RegExp(r'[a-záéíóúãõâêôç]'),
+        )) {
+      wordStart--;
+    }
+
+    // Expandir para frente até encontrar um caractere não-alfabético
+    while (wordEnd < fullText.length &&
+        fullText[wordEnd].toLowerCase().contains(RegExp(r'[a-záéíóúãõâêôç]'))) {
+      wordEnd++;
+    }
+
+    // Substituir a palavra inteira
+    _contentController.replaceText(
+      wordStart,
+      wordEnd - wordStart,
+      newText,
+      TextSelection.collapsed(offset: wordStart + newText.length),
+    );
+  }
+
+  Future<void> _translateWithML() async {
+    final selectedText = _getSelectedText();
+    if (selectedText.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selecione um texto para traduzir')),
+        );
+      }
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Traduzindo..."),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                const Text("Por favor, aguarde"),
+              ],
+            ),
+          ),
+    );
+
+    try {
+      final translator = GoogleTranslator();
+      final translation = await translator.translate(
+        selectedText,
+        from: 'auto', // Detecta automaticamente o idioma
+        to: 'pt', // Português
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Fecha o diálogo
+        _replaceSelectedText(translation.text);
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Fecha o diálogo
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro na tradução: ${e.toString()}'),
+            action: SnackBarAction(
+              label: 'Tentar novamente',
+              onPressed: _translateWithML,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildTextAlignmentButton() {

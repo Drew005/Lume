@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+      "buildNumber": "1",
+      "title": "A primeira versão do LUME esta Disponível! 🎉",
+      "description":
+          "Estou empolgado em apresentar a versão 1.0.0 do LUME!",
+      "features": [
+        "🌙 Sistema de temas",
+        "📱 Interface intuitiva",
+        "🔔 Sistema de notificações",
+        "🎨 Opções de personalização"
+      ],
+      "bugFixes": [
+      ],
+      "improvements": [
+      ],
+      "downloadUrl":
+          "https://github.com/Drew005/Lume/releases/download/v1.0.0/lume.apk",
+      "isForced": false,
+      "releaseDate": "2025-07-04T18:00:00Z"
+}
+

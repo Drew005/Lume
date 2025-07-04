@@ -3,9 +3,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:lume/pages/about_page.dart';
 import 'package:lume/pages/blank_page.dart';
 import 'package:lume/services/theme_manager.dart';
+import 'package:lume/services/update_manager.dart' hide UpdateInfo;
+import 'package:lume/widgets/update_dialog.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+
+import 'package:lume/services/update_manager.dart' as update_manager;
+import 'package:lume/widgets/update_dialog.dart' as update_dialog;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -199,6 +204,39 @@ class _SettingsPageState extends State<SettingsPage> {
                         size: 16,
                       ),
                       onTap: () => _showTimeFormatSelector(context),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Atualizações',
+                style: TextStyle(
+                  color: isDark ? Colors.white54 : Colors.black54,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[900] : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: Icon(
+                        CupertinoIcons.arrow_clockwise,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                      title: Text(
+                        'Verificar Atualizações',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.grey[900],
+                        ),
+                      ),
+                      onTap: () => _checkForUpdatesManually(context),
                     ),
                   ],
                 ),
@@ -1018,6 +1056,85 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       },
     );
+  }
+
+  void _checkForUpdatesManually(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            title: const Text('Verificando atualizações...'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                  'Por favor, aguarde...',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
+
+    try {
+      final updateInfo = await UpdateManager.checkForUpdates();
+      Navigator.of(context).pop(); // Fecha o diálogo de carregamento
+
+      if (updateInfo == null) {
+        UpdateDialogHelper.showUpdateDialog(
+          context,
+          UpdateInfo(
+            title: 'Você está atualizado!',
+            version: 'Versão mais recente',
+            description:
+                'Seu aplicativo está na versão mais recente disponível.',
+            features: [],
+            improvements: [],
+            bugFixes: [],
+            isForced: false,
+            downloadUrl: '', // URL vazia para indicar que não há atualização
+            releaseDate: DateTime.now(),
+          ),
+        );
+      } else {
+        UpdateDialogHelper.showUpdateDialog(
+          context,
+          UpdateInfo(
+            title: updateInfo.releaseName,
+            version: updateInfo.version,
+            description: updateInfo.releaseNotes,
+            features: [],
+            improvements: [],
+            bugFixes: [],
+            isForced: updateInfo.isForced,
+            downloadUrl: updateInfo.downloadUrl,
+            releaseDate: updateInfo.publishedAt,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.of(context).pop(); // Fecha o diálogo de carregamento
+      UpdateDialogHelper.showUpdateDialog(
+        context,
+        UpdateInfo(
+          title: 'Erro ao verificar atualizações',
+          version: '',
+          description: 'Ocorreu um erro ao verificar atualizações: $e',
+          features: [],
+          improvements: [],
+          bugFixes: [],
+          isForced: false,
+          downloadUrl: '',
+          releaseDate: DateTime.now(),
+        ),
+      );
+    }
   }
 }
 

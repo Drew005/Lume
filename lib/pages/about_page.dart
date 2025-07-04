@@ -11,7 +11,7 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final version = '1.0.0'; // Substitua pela versão real do seu app
+    final version = '1.0.0';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -35,13 +35,16 @@ class AboutPage extends StatelessWidget {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: ThemeManager.accentColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.lightbulb_outline,
-                      size: 50,
-                      color: Colors.white,
+                      //color: ThemeManager.accentColor.withOpacity(0.1),
+                      //shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: AssetImage('assets/icon/icon_app.png'),
+                        fit: BoxFit.contain,
+                        colorFilter: ColorFilter.mode(
+                          ThemeManager.accentColor,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

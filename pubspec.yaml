@@ -44,11 +44,7 @@ dependencies:
   flutter_tags: ^1.0.0-nullsafety.1
   intl: ^0.20.2
   flutter_custom_clippers: ^2.1.0
-  ios_search_appbar: ^1.1.6
   
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   material_symbols_icons: ^4.2815.0
   flutter_local_notifications: ^19.2.1
@@ -64,10 +60,7 @@ dependencies:
   parchment: ^1.22.0
 
   flutter_quill: ^11.4.1
-  image_picker: ^1.1.2
   flutter_cache_manager: ^3.4.1
-  cached_network_image: ^3.4.1
-  path_provider: ^2.1.5
 
   animated_text_kit: ^4.2.3
 
@@ -80,16 +73,16 @@ dependencies:
   youtube_player_flutter: ^9.1.1
   file_picker: ^10.2.0
 
-  reorderables: ^0.6.0
-  image_cropper: ^9.1.0
-  image: ^4.5.4
   flutter_quill_extensions: ^11.0.0
 
   flutter_markdown_plus: ^1.0.3
+  package_info_plus: ^8.3.0
+  upgrader: ^11.4.0
 
-  # Splash screen
   another_flutter_splash_screen: ^1.2.1
-  
+
+  translator: ^1.0.3+1
+  fluent_validator: ^0.0.2
 
 dev_dependencies:
   flutter_test:
@@ -119,6 +112,7 @@ flutter:
     - assets/PRIVACY.md
     - assets/TERMS.md
     - assets/splash/cat.gif
+    - assets/icon/icon_app.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
