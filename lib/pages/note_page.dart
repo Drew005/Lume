@@ -849,21 +849,25 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
             _isCheckboxCooldown = true;
 
             final selection = _contentController.selection;
-            if (selection.isCollapsed && !isActive) {
+            final text = _contentController.document.getPlainText(
+              selection.start,
+              selection.end,
+            );
+
+            // Sempre aplica o checkbox na linha atual
+            _contentController.formatSelection(
+              isActive
+                  ? quill.Attribute.clone(quill.Attribute.list, null)
+                  : quill.Attribute.clone(quill.Attribute.list, 'unchecked'),
+            );
+
+            // Se estiver em uma linha vazia, adiciona um espaço para manter o checkbox visível
+            if (selection.isCollapsed && text.trim().isEmpty) {
               _contentController.replaceText(
                 selection.start,
                 0,
-                '',
+                ' ',
                 TextSelection.collapsed(offset: selection.start + 1),
-              );
-              _contentController.formatSelection(
-                quill.Attribute.clone(quill.Attribute.list, 'unchecked'),
-              );
-            } else {
-              _contentController.formatSelection(
-                isActive
-                    ? quill.Attribute.clone(quill.Attribute.list, null)
-                    : quill.Attribute.clone(quill.Attribute.list, 'unchecked'),
               );
             }
 
