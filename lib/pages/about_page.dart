@@ -166,7 +166,10 @@ class AboutPage extends StatelessWidget {
                   icon: const Icon(Icons.mail),
                   color: Theme.of(context).iconTheme.color,
                   onPressed:
-                      () => _launchUrl('mailto:suporte.lume@protonmail.com'),
+                      () => _launchUrl(
+                        context,
+                        'mailto:suporte.lume@protonmail.com',
+                      ),
                 ),
               ],
             ),
@@ -186,14 +189,36 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Future<void> _launchUrl(String url) async {
+  Future<void> _launchUrl(BuildContext context, String url) async {
     final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      final result = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      print('Resultado do launch: $result');
+    bool launched = false;
+
+    if (url.startsWith('mailto:')) {
+      if (await canLaunchUrl(uri)) {
+        launched = await launchUrl(uri);
+      }
+
+      if (!launched) {
+        await _handleMailtoFallback(context, url);
+      }
     } else {
-      throw 'Não foi possível abrir $url';
+      // Para URLs normais
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
     }
+  }
+
+  Future<void> _handleMailtoFallback(BuildContext context, String url) async {
+    final email = url.replaceFirst('mailto:', '').split('?').first;
+    try {
+      final gmailUri = Uri.parse('googlegmail:///co?to=$email');
+      if (await canLaunchUrl(gmailUri)) {
+        await launchUrl(gmailUri);
+        return;
+      }
+    } catch (_) {}
+    await Clipboard.setData(ClipboardData(text: email));
   }
 
   void _showMarkdownDialog(

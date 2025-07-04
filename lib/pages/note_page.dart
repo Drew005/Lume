@@ -910,13 +910,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     final isActive = _isAttributeActive(attribute, value);
 
     return Container(
-      decoration: BoxDecoration(
-        color:
-            isActive
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                : Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
-      ),
       child: IconButton(
         icon: IconTheme(
           data: IconThemeData(
