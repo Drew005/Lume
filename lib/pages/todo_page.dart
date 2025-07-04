@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lume/pages/settings_page.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:intl/intl.dart';
@@ -871,10 +872,20 @@ class _AddTodoBottomSheetState extends State<AddTodoBottomSheet> {
         ),
         ListTile(
           leading: const Icon(CupertinoIcons.clock),
-          title: Text(
-            _dueDateTime == null
-                ? 'Adicionar lembrete'
-                : DateFormat('d MMMM y   HH:mm', 'pt_BR').format(_dueDateTime!),
+          title: ValueListenableBuilder(
+            valueListenable: DateFormatManager.dateFormatNotifier,
+            builder: (context, dateFormat, _) {
+              return ValueListenableBuilder(
+                valueListenable: DateFormatManager.timeFormatNotifier,
+                builder: (context, timeFormat, _) {
+                  return Text(
+                    _dueDateTime == null
+                        ? 'Adicionar lembrete'
+                        : '${DateFormat(dateFormat, 'pt_BR').format(_dueDateTime!)}   ${DateFormat(timeFormat, 'pt_BR').format(_dueDateTime!)}',
+                  );
+                },
+              );
+            },
           ),
           trailing:
               _dueDateTime != null
@@ -998,16 +1009,25 @@ class TodoItemCard extends StatelessWidget {
                             color: Colors.grey[600],
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            DateFormat(
-                              'd MMMM y   HH:mm',
-                              'pt_BR',
-                            ).format(todo.dueDate!),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                            strutStyle: const StrutStyle(leading: 0.5),
+                          ValueListenableBuilder(
+                            valueListenable:
+                                DateFormatManager.dateFormatNotifier,
+                            builder: (context, dateFormat, _) {
+                              return ValueListenableBuilder(
+                                valueListenable:
+                                    DateFormatManager.timeFormatNotifier,
+                                builder: (context, timeFormat, _) {
+                                  return Text(
+                                    '${DateFormat(dateFormat, 'pt_BR').format(todo.dueDate!)}   ${DateFormat(timeFormat, 'pt_BR').format(todo.dueDate!)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                    strutStyle: const StrutStyle(leading: 0.5),
+                                  );
+                                },
+                              );
+                            },
                           ),
                           if (todo.repeatDays.isNotEmpty) ...[
                             const SizedBox(width: 8),

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:intl/intl.dart';
+import 'package:lume/pages/settings_page.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:lume/services/notes_manager.dart';
@@ -500,9 +501,19 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       child: Row(
         children: [
-          Text(
-            DateFormat('d MMMM y   HH:mm', 'pt_BR').format(_updatedAt),
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          ValueListenableBuilder(
+            valueListenable: DateFormatManager.dateFormatNotifier,
+            builder: (context, dateFormat, _) {
+              return ValueListenableBuilder(
+                valueListenable: DateFormatManager.timeFormatNotifier,
+                builder: (context, timeFormat, _) {
+                  return Text(
+                    '${DateFormat(dateFormat, 'pt_BR').format(_updatedAt)}   ${DateFormat(timeFormat, 'pt_BR').format(_updatedAt)}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  );
+                },
+              );
+            },
           ),
           const Spacer(),
           Text(

@@ -5,6 +5,7 @@ import 'package:lume/pages/blank_page.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -17,9 +18,9 @@ class _SettingsPageState extends State<SettingsPage> {
   String _formatName(String format) {
     switch (format) {
       case 'd \'de\' MMM y':
-        return 'Formato brasileiro';
+        return 'Brasileiro';
       case 'MMMM d, y':
-        return 'Formato internacional';
+        return 'Internacional';
       case 'HH:mm':
         return '24h';
       case 'h:mm a':
@@ -122,22 +123,18 @@ class _SettingsPageState extends State<SettingsPage> {
                         color: Theme.of(context).iconTheme.color,
                       ),
                       title: Text(
-                        'Formato de data e hora',
+                        'Formato de data',
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.grey[900],
                         ),
                       ),
-                      subtitle: FutureBuilder(
-                        future: Future.wait([
-                          DateFormatManager.getDateFormat(),
-                          DateFormatManager.getTimeFormat(),
-                        ]),
+                      subtitle: FutureBuilder<String>(
+                        future: DateFormatManager.getDateFormat(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            final dateFormat = snapshot.data![0];
-                            final timeFormat = snapshot.data![1];
+                            final dateFormat = snapshot.data!;
                             return Text(
-                              '${_formatName(dateFormat)} • ${_formatName(timeFormat)}',
+                              _formatName(dateFormat),
                               style: TextStyle(
                                 color:
                                     isDark ? Colors.white70 : Colors.grey[600],
@@ -159,7 +156,49 @@ class _SettingsPageState extends State<SettingsPage> {
                         color: Colors.grey[600],
                         size: 16,
                       ),
-                      onTap: () => _showDateTimeFormatSelector(context),
+                      onTap: () => _showDateFormatSelector(context),
+                    ),
+                    const Divider(height: 1, color: Colors.grey),
+                    ListTile(
+                      leading: Icon(
+                        CupertinoIcons.clock,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                      title: Text(
+                        'Formato de hora',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.grey[900],
+                        ),
+                      ),
+                      subtitle: FutureBuilder<String>(
+                        future: DateFormatManager.getTimeFormat(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            final timeFormat = snapshot.data!;
+                            return Text(
+                              _formatName(timeFormat),
+                              style: TextStyle(
+                                color:
+                                    isDark ? Colors.white70 : Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            );
+                          }
+                          return Text(
+                            'Carregando...',
+                            style: TextStyle(
+                              color: isDark ? Colors.white70 : Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          );
+                        },
+                      ),
+                      trailing: Icon(
+                        CupertinoIcons.chevron_right,
+                        color: Colors.grey[600],
+                        size: 16,
+                      ),
+                      onTap: () => _showTimeFormatSelector(context),
                     ),
                   ],
                 ),
@@ -732,12 +771,11 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showDateTimeFormatSelector(BuildContext context) {
+  void _showDateFormatSelector(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
       backgroundColor: isDark ? Colors.grey[900] : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -763,118 +801,212 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Formato de Data e Hora',
+                    'Selecionar Formato de Data',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // Seção de formato de data
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16, bottom: 8),
-                    child: Text(
-                      'Formato de Data',
+                  ListTile(
+                    leading: Icon(
+                      CupertinoIcons.calendar,
+                      color: ThemeManager.accentColor,
+                    ),
+                    title: Text(
+                      'Brasileiro',
                       style: TextStyle(
-                        color: isDark ? Colors.white70 : Colors.grey[700],
-                        fontSize: 16,
+                        color: isDark ? Colors.white : Colors.black,
                       ),
                     ),
+                    subtitle: Text(
+                      '${DateFormat('d \'de\' MMM y', 'pt_BR').format(DateTime.now())}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: FutureBuilder<String>(
+                      future: DateFormatManager.getDateFormat(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData &&
+                            snapshot.data == 'd \'de\' MMM y') {
+                          return Icon(
+                            CupertinoIcons.checkmark_circle_fill,
+                            color: ThemeManager.accentColor,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    onTap: () async {
+                      await DateFormatManager.setDateFormat('d \'de\' MMM y');
+                      setModalState(() {});
+                      setState(() {});
+                      Navigator.pop(context);
+                    },
                   ),
-                  FutureBuilder<String>(
-                    future: DateFormatManager.getDateFormat(),
-                    builder: (context, snapshot) {
-                      final currentFormat = snapshot.data ?? 'd MMMM y';
-                      return Column(
-                        children: [
-                          ListTile(
-                            title: Text('Formato brasileiro'),
-                            trailing: Radio<String>(
-                              value: 'd \'de\' MMM y',
-                              groupValue: currentFormat,
-                              onChanged: (value) async {
-                                if (value != null) {
-                                  await DateFormatManager.setDateFormat(value);
-                                  setModalState(() {});
-                                  setState(() {});
-                                }
-                              },
-                              activeColor: ThemeManager.accentColor,
-                            ),
-                          ),
-                          ListTile(
-                            title: Text('Formato internacional'),
-                            trailing: Radio<String>(
-                              value: 'MMMM d, y',
-                              groupValue: currentFormat,
-                              onChanged: (value) async {
-                                if (value != null) {
-                                  await DateFormatManager.setDateFormat(value);
-                                  setModalState(() {});
-                                  setState(() {});
-                                }
-                              },
-                              activeColor: ThemeManager.accentColor,
-                            ),
-                          ),
-                        ],
-                      );
+                  ListTile(
+                    leading: Icon(
+                      CupertinoIcons.globe,
+                      color: ThemeManager.accentColor,
+                    ),
+                    title: Text(
+                      'Internacional',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${DateFormat('MMMM d, y', 'pt_BR').format(DateTime.now())}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: FutureBuilder<String>(
+                      future: DateFormatManager.getDateFormat(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data == 'MMMM d, y') {
+                          return Icon(
+                            CupertinoIcons.checkmark_circle_fill,
+                            color: ThemeManager.accentColor,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    onTap: () async {
+                      await DateFormatManager.setDateFormat('MMMM d, y');
+                      setModalState(() {});
+                      setState(() {});
+                      Navigator.pop(context);
                     },
                   ),
 
                   const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
-                  // Seção de formato de hora
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16, bottom: 8),
-                    child: Text(
-                      'Formato de Hora',
-                      style: TextStyle(
-                        color: isDark ? Colors.white70 : Colors.grey[700],
-                        fontSize: 16,
+  void _showTimeFormatSelector(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
-                  FutureBuilder<String>(
-                    future: DateFormatManager.getTimeFormat(),
-                    builder: (context, snapshot) {
-                      final currentFormat = snapshot.data ?? 'HH:mm';
-                      return Column(
-                        children: [
-                          ListTile(
-                            title: Text('24H'),
-                            trailing: Radio<String>(
-                              value: 'HH:mm',
-                              groupValue: currentFormat,
-                              onChanged: (value) async {
-                                if (value != null) {
-                                  await DateFormatManager.setTimeFormat(value);
-                                  setModalState(() {});
-                                  setState(() {});
-                                }
-                              },
-                              activeColor: ThemeManager.accentColor,
-                            ),
-                          ),
-                          ListTile(
-                            title: Text('AM/PM'),
-                            trailing: Radio<String>(
-                              value: 'h:mm a',
-                              groupValue: currentFormat,
-                              onChanged: (value) async {
-                                if (value != null) {
-                                  await DateFormatManager.setTimeFormat(value);
-                                  setModalState(() {});
-                                  setState(() {});
-                                }
-                              },
-                              activeColor: ThemeManager.accentColor,
-                            ),
-                          ),
-                        ],
-                      );
+                  const SizedBox(height: 16),
+                  Text(
+                    'Selecionar Formato de Hora',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  ListTile(
+                    leading: Icon(
+                      CupertinoIcons.clock,
+                      color: ThemeManager.accentColor,
+                    ),
+                    title: Text(
+                      '24 Horas',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${DateFormat('HH:mm', 'pt_BR').format(DateTime.now())}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: FutureBuilder<String>(
+                      future: DateFormatManager.getTimeFormat(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data == 'HH:mm') {
+                          return Icon(
+                            CupertinoIcons.checkmark_circle_fill,
+                            color: ThemeManager.accentColor,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    onTap: () async {
+                      await DateFormatManager.setTimeFormat('HH:mm');
+                      setModalState(() {});
+                      setState(() {});
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      CupertinoIcons.time,
+                      color: ThemeManager.accentColor,
+                    ),
+                    title: Text(
+                      'AM/PM',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${DateFormat('h:mm a', 'pt_BR').format(DateTime.now())}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: FutureBuilder<String>(
+                      future: DateFormatManager.getTimeFormat(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data == 'h:mm a') {
+                          return Icon(
+                            CupertinoIcons.checkmark_circle_fill,
+                            color: ThemeManager.accentColor,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    onTap: () async {
+                      await DateFormatManager.setTimeFormat('h:mm a');
+                      setModalState(() {});
+                      setState(() {});
+                      Navigator.pop(context);
                     },
                   ),
 
