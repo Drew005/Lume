@@ -11,6 +11,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:lume/services/notes_manager.dart';
 import '../models/note.dart';
+import 'package:flutter/rendering.dart';
 
 // ==========================================
 // MAIN WIDGET CLASS
@@ -51,6 +52,7 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
   Note? _currentNote;
   bool _isCheckboxInteraction = false;
   bool _isCheckboxCooldown = false;
+  Timer? _saveDebounceTimer;
 
   // ==========================================
   // LIFECYCLE METHODS
@@ -129,9 +131,32 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
   // EVENT HANDLERS
   // ==========================================
   void _onFocusChanged() {
-    if (_focusNode.hasFocus && _isKeyboardVisible && !_isCheckboxInteraction) {
-      setState(() => _isTyping = true);
+    if (_focusNode.hasFocus) {
+      setState(() {
+        _isTyping = true;
+        // Rolar para a posição de edição
+        _scrollToCursor();
+      });
     }
+  }
+
+  void _scrollToCursor() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final renderObject = _editorKey.currentContext?.findRenderObject();
+      if (renderObject is RenderBox) {
+        final offset = renderObject.localToGlobal(Offset.zero);
+        final viewportHeight = MediaQuery.of(context).size.height;
+        final cursorPosition = offset.dy + renderObject.size.height;
+
+        if (cursorPosition > viewportHeight * 0.7) {
+          _scrollController.animateTo(
+            _scrollController.offset + cursorPosition - viewportHeight * 0.7,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          );
+        }
+      }
+    });
   }
 
   void _onThemeChanged() {
@@ -141,13 +166,19 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
   void _onContentChanged() {
     if (_isDisposed || !mounted) return;
 
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted && !_isDisposed) {
-        setState(() {
-          _isTyping = true;
-          _hasChanges = true;
-        });
+    // Cancelar timer existente
+    _saveDebounceTimer?.cancel();
+
+    // Iniciar novo timer
+    _saveDebounceTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted && !_isDisposed && _hasChanges) {
+        _saveNote();
       }
+    });
+
+    setState(() {
+      _isTyping = true;
+      _hasChanges = true;
     });
   }
 
@@ -334,13 +365,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
   // ==========================================
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final characterCount =
-        _contentController.document
-            .toPlainText()
-            .replaceAll(RegExp(r'\s+'), '')
-            .length;
-
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeManager.themeNotifier,
       builder: (context, themeMode, child) {
@@ -348,7 +372,14 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
           onWillPop: _onWillPop,
           child: Scaffold(
             appBar: _buildAppBar(context),
-            body: _buildEditorContent(context, isDark, characterCount),
+            body: _buildEditorContent(
+              context,
+              Theme.of(context).brightness == Brightness.dark,
+              _contentController.document
+                  .toPlainText()
+                  .replaceAll(RegExp(r'\s+'), '')
+                  .length,
+            ),
           ),
         );
       },
@@ -403,7 +434,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     return GestureDetector(
       onTap: () {
         setState(() => _isTyping = true);
-
         if (!_contentController.selection.isValid ||
             _contentController.selection.isCollapsed) {
           final length = _contentController.document.length;
@@ -412,7 +442,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
             quill.ChangeSource.local,
           );
         }
-
         _focusNode.requestFocus();
       },
       behavior: HitTestBehavior.opaque,
@@ -579,6 +608,7 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     );
   }
 
+  // Atualize o _buildToolbar para usar o botão único:
   Widget _buildToolbar() {
     return SizedBox(
       height: 56,
@@ -613,30 +643,100 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
                 _buildToggleButton(
                   attribute: quill.Attribute.underline,
                   icon: const Icon(CupertinoIcons.underline, size: 30),
-                  tooltip: 'Tachado',
+                  tooltip: 'Sublinhado',
                 ),
                 const SizedBox(width: 2),
                 _buildHighlightButton(),
                 const SizedBox(width: 2),
                 _buildChecklistButton(),
                 const SizedBox(width: 2),
-                _buildToggleButton(
-                  attribute: quill.Attribute.rightAlignment,
-                  icon: const Icon(CupertinoIcons.text_alignright, size: 30),
-                  tooltip: 'Tachado',
-                ),
-                const SizedBox(width: 2),
-                _buildToggleButton(
-                  attribute: quill.Attribute.centerAlignment,
-                  icon: const Icon(CupertinoIcons.text_aligncenter, size: 30),
-                  tooltip: 'Tachado',
-                ),
+                _buildTextAlignmentButton(), // Botão de alinhamento cíclico
                 const SizedBox(width: 8),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextAlignmentButton() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Builder(
+      builder: (context) {
+        // Obter o alinhamento atual
+        final currentAlignment =
+            _contentController.getSelectionStyle().attributes['align']?.value ??
+            'left';
+
+        // Ícone baseado no alinhamento atual
+        IconData icon;
+        String tooltip;
+
+        switch (currentAlignment) {
+          case 'left':
+            icon = CupertinoIcons.text_alignleft;
+            tooltip = 'Alinhado à esquerda';
+            break;
+          case 'center':
+            icon = CupertinoIcons.text_aligncenter;
+            tooltip = 'Alinhado ao centro';
+            break;
+          case 'right':
+            icon = CupertinoIcons.text_alignright;
+            tooltip = 'Alinhado à direita';
+            break;
+          case 'justify':
+            icon = CupertinoIcons.text_justify;
+            tooltip = 'Justificado';
+            break;
+          default:
+            icon = CupertinoIcons.text_alignleft;
+            tooltip = 'Alinhado à esquerda';
+        }
+
+        return IconButton(
+          icon: Icon(
+            icon,
+            size: 30,
+            color:
+                currentAlignment != 'left'
+                    ? ThemeManager.accentColor
+                    : isDark
+                    ? Colors.white
+                    : Colors.black,
+          ),
+          tooltip: tooltip,
+          onPressed: () {
+            // Ciclo de alinhamentos
+            String nextAlignment;
+            switch (currentAlignment) {
+              case 'left':
+                nextAlignment = 'center';
+                break;
+              case 'center':
+                nextAlignment = 'right';
+                break;
+              case 'right':
+                nextAlignment = 'justify';
+                break;
+              case 'justify':
+                nextAlignment = 'left';
+                break;
+              default:
+                nextAlignment = 'center';
+            }
+
+            _contentController.formatSelection(
+              quill.Attribute.fromKeyValue('align', nextAlignment),
+            );
+            setState(() => _hasChanges = true);
+          },
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        );
+      },
     );
   }
 
@@ -779,51 +879,57 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     );
   }
 
+  bool _isAttributeActive(quill.Attribute attribute, dynamic value) {
+    final attrs = _contentController.getSelectionStyle().attributes;
+    return value != null
+        ? attrs[attribute.key]?.value == value
+        : attrs.containsKey(attribute.key);
+  }
+
   Widget _buildToggleButton({
     required quill.Attribute attribute,
     dynamic value,
     required Widget icon,
     required String tooltip,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isActive = _isAttributeActive(attribute, value);
 
-    return Builder(
-      builder: (context) {
-        final attrs = _contentController.getSelectionStyle().attributes;
-        final isActive =
-            value != null
-                ? attrs[attribute.key]?.value == value
-                : attrs.containsKey(attribute.key);
-
-        return IconButton(
-          icon: IconTheme(
-            data: IconThemeData(
-              color:
-                  isActive
-                      ? ThemeManager.accentColor
-                      : isDark
-                      ? Colors.white
-                      : Colors.black,
-              size: 18,
-            ),
-            child: icon,
+    return Container(
+      decoration: BoxDecoration(
+        color:
+            isActive
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                : Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: IconButton(
+        icon: IconTheme(
+          data: IconThemeData(
+            color:
+                isActive
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurface,
+            size: 22,
           ),
-          tooltip: tooltip,
-          onPressed: () {
-            _contentController.formatSelection(
-              isActive
-                  ? quill.Attribute.clone(attribute, null)
-                  : value != null
-                  ? quill.Attribute.clone(attribute, value)
-                  : attribute,
-            );
-            setState(() {});
-          },
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        );
-      },
+          child: icon,
+        ),
+        tooltip: tooltip,
+        onPressed: () => _toggleAttribute(attribute, value),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      ),
     );
+  }
+
+  void _toggleAttribute(quill.Attribute attribute, dynamic value) {
+    _contentController.formatSelection(
+      _isAttributeActive(attribute, value)
+          ? quill.Attribute.clone(attribute, null)
+          : value != null
+          ? quill.Attribute.clone(attribute, value)
+          : attribute,
+    );
+    setState(() {});
   }
 
   // ==========================================
