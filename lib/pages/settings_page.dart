@@ -16,7 +16,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String _formatName(String format) {
     switch (format) {
-      case 'd \'de\' MMMM \'de\' y':
+      case 'd \'de\' MMM y':
         return 'Formato brasileiro';
       case 'MMMM d, y':
         return 'Formato internacional';
@@ -792,7 +792,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ListTile(
                             title: Text('Formato brasileiro'),
                             trailing: Radio<String>(
-                              value: 'd \'de\' MMMM \'de\' y',
+                              value: 'd \'de\' MMM y',
                               groupValue: currentFormat,
                               onChanged: (value) async {
                                 if (value != null) {
@@ -894,7 +894,7 @@ class DateFormatManager {
   static const String _timeFormatKey = 'timeFormat';
 
   static final ValueNotifier<String> dateFormatNotifier = ValueNotifier<String>(
-    'd MMMM y',
+    'd \'de\' MMM y',
   );
   static final ValueNotifier<String> timeFormatNotifier = ValueNotifier<String>(
     'HH:mm',
@@ -902,7 +902,8 @@ class DateFormatManager {
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    dateFormatNotifier.value = prefs.getString(_dateFormatKey) ?? 'd MMMM y';
+    dateFormatNotifier.value =
+        prefs.getString(_dateFormatKey) ?? 'd \'de\' MMM y';
     timeFormatNotifier.value = prefs.getString(_timeFormatKey) ?? 'HH:mm';
   }
 
