@@ -334,7 +334,7 @@ class _TodoPageState extends State<TodoPage>
           htmlFormatContentTitle: true,
           summaryText: 'Tarefa',
         ),
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_launcher_foreground',
         largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         colorized: true,
       );
