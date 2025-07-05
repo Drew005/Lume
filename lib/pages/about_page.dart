@@ -288,6 +288,11 @@ class AboutPage extends StatelessWidget {
                               a: TextStyle(color: ThemeManager.accentColor),
                             ),
                             shrinkWrap: false,
+                            onTapLink: (text, href, title) {
+                              if (href != null) {
+                                _launchUrl(context, href);
+                              }
+                            },
                           ),
                         );
                       } else if (snapshot.hasError) {

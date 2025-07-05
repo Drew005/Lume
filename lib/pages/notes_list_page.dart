@@ -390,28 +390,35 @@ class _NotesListPageState extends State<NotesListPage>
             ),
           ),
           actions: [
-            // Botão "Gerenciar categorias"
-            TextButton.icon(
-              icon: Icon(
-                CupertinoIcons.folder,
-                size: 18,
-                color: ThemeManager.accentColor,
+            SizedBox(
+              width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    icon: Icon(
+                      CupertinoIcons.folder,
+                      size: 18,
+                      color: ThemeManager.accentColor,
+                    ),
+                    label: Text(
+                      'Gerenciar categorias',
+                      style: TextStyle(color: ThemeManager.accentColor),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _navigateToCategories(context);
+                    },
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ],
               ),
-              label: Text(
-                'Gerenciar categorias',
-                style: TextStyle(color: ThemeManager.accentColor),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                _navigateToCategories(context);
-              },
-            ),
-            // Espaçamento flexível
-            const Expanded(child: SizedBox.shrink()),
-            // Botão "Cancelar"
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey)),
             ),
           ],
         );
