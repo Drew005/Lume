@@ -9,6 +9,8 @@ import '../widgets/category_filter_chip.dart';
 import '../models/note.dart';
 import '../services/notes_manager.dart';
 import 'note_page.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:convert';
 
 class CombinedValueListenable extends ValueNotifier<void> {
   final List<ValueNotifier<dynamic>> listenables;
@@ -97,6 +99,77 @@ class _NotesListPageState extends State<NotesListPage>
       _selectedNotes.clear();
     });
     widget.onSelectionModeChanged(false, 0);
+  }
+
+  Future<void> _shareSelectedNotes() async {
+    if (!mounted) return;
+
+    try {
+      final notes = NotesManager.allNotes;
+      final selectedNotes =
+          _selectedNotes.map((index) => notes[index]).toList();
+
+      if (selectedNotes.isEmpty) {
+        if (mounted) {
+          IconSnackBar.show(
+            context,
+            snackBarType: SnackBarType.fail,
+            label: 'Nenhuma nota selecionada',
+            duration: const Duration(seconds: 2),
+          );
+        }
+        return;
+      }
+
+      String shareText = '';
+
+      for (final note in selectedNotes) {
+        final plainText = _extractPlainText(note.content);
+        shareText += '${note.title.isNotEmpty ? note.title : "(Sem título)"}\n';
+        shareText += '$plainText\n\n';
+      }
+
+      await Share.share(
+        shareText.trim(),
+        subject:
+            selectedNotes.length == 1
+                ? selectedNotes.first.title.isNotEmpty
+                    ? selectedNotes.first.title
+                    : 'Nota compartilhada'
+                : '${selectedNotes.length} notas compartilhadas',
+      );
+    } catch (e) {
+      if (mounted) {
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Erro ao compartilhar: ${e.toString()}',
+          duration: const Duration(seconds: 2),
+        );
+      }
+    }
+  }
+
+  // Método auxiliar para extrair texto
+  String _extractPlainText(String quillContent) {
+    try {
+      final contentJson = jsonDecode(quillContent);
+      if (contentJson is List) {
+        return contentJson
+            .map((block) {
+              if (block is Map && block.containsKey('insert')) {
+                return block['insert'] is String ? block['insert'] : '';
+              }
+              return '';
+            })
+            .join('')
+            .replaceAll('\n', ' ')
+            .trim();
+      }
+    } catch (e) {
+      return quillContent;
+    }
+    return quillContent;
   }
 
   Future<void> _deleteSelectedNotes() async {
@@ -533,6 +606,11 @@ class _NotesListPageState extends State<NotesListPage>
       ),
       title: Text('${_selectedNotes.length} selecionadas'),
       actions: [
+        IconButton(
+          icon: const Icon(CupertinoIcons.share_solid),
+          onPressed: _shareSelectedNotes,
+          tooltip: 'Compartilhar selecionadas',
+        ),
         IconButton(
           icon: const Icon(CupertinoIcons.folder_fill_badge_plus),
           onPressed: _moveSelectedNotesToCategory,

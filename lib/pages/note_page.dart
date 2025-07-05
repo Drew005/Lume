@@ -12,6 +12,7 @@ import 'package:lume/pages/settings_page.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:lume/services/notes_manager.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:translator/translator.dart';
 import '../models/note.dart';
 import 'package:flutter/rendering.dart';
@@ -302,6 +303,43 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     setState(() => _hasChanges = true);
   }
 
+  Future<void> _shareNote() async {
+    try {
+      final title = _titleController.text.trim();
+      final content = _contentController.document.toPlainText().trim();
+
+      if (title.isEmpty && content.isEmpty) {
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Nada para compartilhar',
+          duration: const Duration(seconds: 2),
+        );
+        return;
+      }
+
+      String shareText = '';
+      if (title.isNotEmpty) {
+        shareText += '$title\n\n';
+      }
+      if (content.isNotEmpty) {
+        shareText += content;
+      }
+
+      await Share.share(
+        shareText,
+        subject: title.isNotEmpty ? title : 'Nota compartilhada',
+      );
+    } catch (e) {
+      IconSnackBar.show(
+        context,
+        snackBarType: SnackBarType.fail,
+        label: 'Erro ao compartilhar: ${e.toString()}',
+        duration: const Duration(seconds: 2),
+      );
+    }
+  }
+
   bool _isChecklistActive() {
     final selection = _contentController.selection;
     if (!selection.isValid) return false;
@@ -404,8 +442,18 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
           if (mounted) Navigator.pop(context);
         },
       ),
-      actions: _isTyping ? _buildAppBarActions() : null,
+      actions: _isTyping ? _buildAppBarActions() : _buildAppBarOtherActions(),
     );
+  }
+
+  List<Widget> _buildAppBarOtherActions() {
+    return [
+      IconButton(
+        icon: const Icon(CupertinoIcons.share),
+        onPressed: _shareNote,
+        tooltip: 'Compartilhar',
+      ),
+    ];
   }
 
   List<Widget> _buildAppBarActions() {
