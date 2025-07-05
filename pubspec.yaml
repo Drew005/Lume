@@ -90,6 +90,8 @@ dependencies:
 
   connectivity_plus: ^6.1.4
 
+  flutter_svg: ^2.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -119,6 +121,8 @@ flutter:
     - assets/TERMS.md
     - assets/splash/cat.gif
     - assets/icon/icon_app.png
+    - assets/bt_icons/br.svg
+    - assets/bt_icons/clock.svg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

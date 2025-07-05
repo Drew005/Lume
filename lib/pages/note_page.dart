@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -283,7 +282,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
           context,
           snackBarType: SnackBarType.fail,
           label: 'Erro ao salvar: ${e.toString()}',
-          labelTextStyle: TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
@@ -315,7 +313,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
           context,
           snackBarType: SnackBarType.fail,
           label: 'Nada para compartilhar',
-          labelTextStyle: TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
         return;
@@ -338,7 +335,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
         context,
         snackBarType: SnackBarType.fail,
         label: 'Erro ao compartilhar: ${e.toString()}',
-        labelTextStyle: TextStyle(color: Colors.white),
         duration: const Duration(seconds: 2),
       );
     }
@@ -720,25 +716,11 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
                 const SizedBox(width: 2),
                 _buildTextAlignmentButton(),
                 const SizedBox(width: 2),
-                StreamBuilder<List<ConnectivityResult>>(
-                  stream: Connectivity().onConnectivityChanged,
-                  builder: (context, snapshot) {
-                    final isConnected =
-                        snapshot.data?.contains(ConnectivityResult.none) ==
-                        false;
-                    return IconButton(
-                      icon: const Icon(Icons.translate, size: 24),
-                      onPressed: isConnected ? _translateWithML : null,
-                      tooltip:
-                          isConnected
-                              ? 'Traduzir texto selecionado'
-                              : 'Sem conexão com a internet',
-                      color:
-                          isConnected
-                              ? Theme.of(context).colorScheme.onSurface
-                              : Colors.grey,
-                    );
-                  },
+                IconButton(
+                  icon: const Icon(Icons.translate, size: 24),
+                  onPressed: _translateWithML,
+                  tooltip: 'Traduzir texto selecionado',
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: 8),
               ],
@@ -816,21 +798,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
   }
 
   Future<void> _translateWithML() async {
-    // Verifica a conexão com a internet
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult.contains(ConnectivityResult.none)) {
-      if (mounted) {
-        IconSnackBar.show(
-          context,
-          snackBarType: SnackBarType.fail,
-          label: 'Sem conexão com a internet',
-          labelTextStyle: const TextStyle(color: Colors.white),
-          duration: const Duration(seconds: 2),
-        );
-      }
-      return;
-    }
-
     final selectedText = _getSelectedText();
     if (selectedText.isEmpty) {
       if (mounted) {
@@ -838,7 +805,6 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
           context,
           snackBarType: SnackBarType.fail,
           label: 'Selecione um texto para traduzir',
-          labelTextStyle: const TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
@@ -877,12 +843,14 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
-        IconSnackBar.show(
-          context,
-          snackBarType: SnackBarType.fail,
-          label: 'Erro na tradução: ${e.toString()}',
-          labelTextStyle: const TextStyle(color: Colors.white),
-          duration: const Duration(seconds: 2),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro na tradução: ${e.toString()}'),
+            action: SnackBarAction(
+              label: 'Tentar novamente',
+              onPressed: _translateWithML,
+            ),
+          ),
         );
       }
     }

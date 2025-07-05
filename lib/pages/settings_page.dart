@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:lume/pages/about_page.dart';
 import 'package:lume/pages/blank_page.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:lume/services/update_manager.dart' hide UpdateInfo;
 import 'package:lume/widgets/update_dialog.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
@@ -183,7 +185,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       // Opção Formato de Hora
                       ListTile(
                         leading: Icon(
-                          CupertinoIcons.clock,
+                          Symbols.schedule,
                           color: Theme.of(context).iconTheme.color,
                         ),
                         title: Text(
@@ -888,9 +890,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 16),
 
                   ListTile(
-                    leading: Icon(
-                      CupertinoIcons.calendar,
+                    leading: SvgPicture.asset(
+                      'assets/bt_icons/br.svg',
                       color: ThemeManager.accentColor,
+                      width: 24,
+                      height: 24,
                     ),
                     title: Text(
                       'Brasileiro',
@@ -1050,9 +1054,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(
-                      CupertinoIcons.time,
+                    leading: SvgPicture.asset(
+                      'assets/bt_icons/clock.svg',
                       color: ThemeManager.accentColor,
+                      width: 24,
+                      height: 24,
                     ),
                     title: Text(
                       'AM/PM',
