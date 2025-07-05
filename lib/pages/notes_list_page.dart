@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icon_snackbar/flutter_icon_snackbar.dart';
 import 'package:lume/pages/categories_page.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -143,16 +144,22 @@ class _NotesListPageState extends State<NotesListPage>
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${_selectedNotes.length} notas excluídas')),
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.alert,
+          label: '${_selectedNotes.length} notas excluídas',
+          duration: const Duration(seconds: 2),
         );
       }
 
       _exitSelectionMode();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir notas: ${e.toString()}')),
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Erro ao excluir notas: ${e.toString()}',
+          duration: const Duration(seconds: 2),
         );
       }
     }
@@ -235,18 +242,22 @@ class _NotesListPageState extends State<NotesListPage>
         }
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Notas movidas para $category')),
+          IconSnackBar.show(
+            context,
+            snackBarType: SnackBarType.alert,
+            label: 'Notas movidas para $category',
+            duration: const Duration(seconds: 2),
           );
         }
 
         _exitSelectionMode();
       } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao mover notas: ${e.toString()}')),
-          );
-        }
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Erro ao mover notas: ${e.toString()}',
+          duration: const Duration(seconds: 2),
+        );
       }
     }
   }
@@ -549,8 +560,11 @@ class _NotesListPageState extends State<NotesListPage>
     );
 
     if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nota atualizada com sucesso!')),
+      IconSnackBar.show(
+        context,
+        snackBarType: SnackBarType.success,
+        label: 'Nota atualizada com sucesso!',
+        duration: const Duration(seconds: 2),
       );
     }
   }
@@ -565,8 +579,10 @@ class _NotesListPageState extends State<NotesListPage>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir: ${e.toString()}')),
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Erro ao excluir: ${e.toString()}',
         );
       }
     }

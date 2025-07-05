@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icon_snackbar/flutter_icon_snackbar.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lume/services/theme_manager.dart';
 import '../services/notes_manager.dart';
@@ -82,11 +83,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
           builder: (context, categories, _) {
             return GestureDetector(
               onTap: () {
-                // Remove o foco de qualquer campo quando tocar em áreas vazias
                 FocusScope.of(context).unfocus();
               },
               child: Theme(
-                // Customiza o tema para remover a cor de fundo durante o arrastar
                 data: Theme.of(
                   context,
                 ).copyWith(canvasColor: Colors.transparent),
@@ -286,14 +285,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
     newName = newName.trim();
     if (newName.isEmpty || newName == oldName) return;
 
-    // Verifica se a nova categoria já existe
     if (NotesManager.categoriesNotifier.value.contains(newName)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('A categoria "$newName" já existe'),
-            duration: const Duration(seconds: 2),
-          ),
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'A categoria "$newName" já existe',
+          duration: const Duration(seconds: 2),
         );
       }
       return;

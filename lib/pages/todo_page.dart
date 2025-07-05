@@ -157,20 +157,9 @@ class _TodoPageState extends State<TodoPage>
         await _deleteTodo(index);
       }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${_selectedTodos.length} tarefas excluídas')),
-        );
-      }
-
       _exitSelectionMode();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir tarefas: ${e.toString()}')),
-        );
-      }
-    }
+      // ignore: empty_catches
+    } catch (e) {}
   }
 
   Future<bool> _checkPermissions() async {
@@ -289,16 +278,6 @@ class _TodoPageState extends State<TodoPage>
     }
 
     final hasPermission = await _checkPermissions();
-    if (!hasPermission) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Permissão para notificações não concedida'),
-          ),
-        );
-      }
-      return;
-    }
 
     try {
       final notificationId = _generateNotificationId(todo);
@@ -386,11 +365,6 @@ class _TodoPageState extends State<TodoPage>
       }
     } catch (e) {
       debugPrint('Erro ao agendar notificação: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha ao agendar: ${e.toString()}')),
-        );
-      }
     }
   }
 

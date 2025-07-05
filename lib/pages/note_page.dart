@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_icon_snackbar/flutter_icon_snackbar.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:intl/intl.dart';
@@ -276,8 +277,11 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
       }
     } catch (e) {
       if (mounted && !_isDisposed) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: ${e.toString()}')),
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Erro ao salvar: ${e.toString()}',
+          duration: const Duration(seconds: 2),
         );
       }
     } finally {
@@ -749,8 +753,11 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     final selectedText = _getSelectedText();
     if (selectedText.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Selecione um texto para traduzir')),
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Selecione um texto para traduzir',
+          duration: const Duration(seconds: 2),
         );
       }
       return;
@@ -777,17 +784,17 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
       final translator = GoogleTranslator();
       final translation = await translator.translate(
         selectedText,
-        from: 'auto', // Detecta automaticamente o idioma
-        to: 'pt', // Português
+        from: 'auto',
+        to: 'pt',
       );
 
       if (mounted) {
-        Navigator.pop(context); // Fecha o diálogo
+        Navigator.pop(context);
         _replaceSelectedText(translation.text);
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Fecha o diálogo
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro na tradução: ${e.toString()}'),
