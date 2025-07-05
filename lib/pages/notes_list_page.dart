@@ -117,7 +117,7 @@ class _NotesListPageState extends State<NotesListPage>
             context,
             snackBarType: SnackBarType.fail,
             label: 'Nenhuma nota selecionada',
-            labelTextStyle: TextStyle(color: Colors.white),
+            labelTextStyle: const TextStyle(color: Colors.white),
             duration: const Duration(seconds: 2),
           );
         }
@@ -126,11 +126,33 @@ class _NotesListPageState extends State<NotesListPage>
 
       String shareText = '';
 
-      for (final note in selectedNotes) {
-        final plainText = _extractPlainText(note.content);
-        shareText += '${note.title.isNotEmpty ? note.title : "(Sem título)"}\n';
-        shareText += '$plainText\n\n';
+      if (selectedNotes.length > 1) {
+        shareText += '📚 *${selectedNotes.length} NOTAS COMPARTILHADAS*\n\n';
       }
+
+      for (final note in selectedNotes) {
+        final plainText =
+            _extractPlainText(note.content)
+                .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+                .replaceAll(RegExp(r'(\n\s*)+\n'), '\n\n')
+                .trim();
+
+        // Adiciona título da nota
+        shareText +=
+            '📝 *${note.title.isNotEmpty ? note.title.toUpperCase() : "SEM TÍTULO"}*\n\n';
+
+        // Adiciona conteúdo formatado
+        shareText += '$plainText\n\n';
+
+        // Adiciona separador entre notas
+        if (selectedNotes.length > 1) {
+          shareText += '━━━━━━━━━━━━━━━━\n\n';
+        }
+      }
+
+      // Adiciona rodapé
+      shareText += '---\n';
+      shareText += 'Enviado via Lume App';
 
       await Share.share(
         shareText.trim(),
@@ -147,7 +169,7 @@ class _NotesListPageState extends State<NotesListPage>
           context,
           snackBarType: SnackBarType.fail,
           label: 'Erro ao compartilhar: ${e.toString()}',
-          labelTextStyle: TextStyle(color: Colors.white),
+          labelTextStyle: const TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
@@ -162,12 +184,14 @@ class _NotesListPageState extends State<NotesListPage>
         return contentJson
             .map((block) {
               if (block is Map && block.containsKey('insert')) {
-                return block['insert'] is String ? block['insert'] : '';
+                // Preserva quebras de linha
+                if (block['insert'] is String) {
+                  return block['insert'];
+                }
               }
               return '';
             })
             .join('')
-            .replaceAll('\n', ' ')
             .trim();
       }
     } catch (e) {

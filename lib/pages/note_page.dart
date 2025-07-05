@@ -320,11 +320,27 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
 
       String shareText = '';
       if (title.isNotEmpty) {
-        shareText += '$title\n\n';
+        shareText += '📝 *${title.toUpperCase()}*\n\n';
       }
-      if (content.isNotEmpty) {
-        shareText += content;
-      }
+
+      // Formatando o conteúdo com melhor espaçamento
+      final formattedContent =
+          content
+              .replaceAll(
+                RegExp(r'\n{3,}'),
+                '\n\n',
+              ) // Reduz múltiplas quebras de linha
+              .replaceAll(
+                RegExp(r'(\n\s*)+\n'),
+                '\n\n',
+              ) // Remove linhas vazias extras
+              .trim();
+
+      shareText += formattedContent;
+
+      // Adiciona rodapé com informações do app
+      shareText += '\n\n---\n';
+      shareText += 'Enviado via Lume App';
 
       await Share.share(
         shareText,
