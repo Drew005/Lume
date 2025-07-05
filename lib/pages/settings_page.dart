@@ -55,6 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Seção Aparência
               Text(
                 'Aparência',
                 style: TextStyle(
@@ -69,145 +70,169 @@ class _SettingsPageState extends State<SettingsPage> {
                   color: isDark ? Colors.grey[900] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Column(
-                  children: [
-                    // Opção de tema com três estados
-                    ListTile(
-                      leading: Icon(
-                        _getThemeIcon(),
-                        color: Theme.of(context).iconTheme.color,
-                      ),
-                      title: Text(
-                        'Tema',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.grey[900],
+                clipBehavior: Clip.hardEdge, // Adicione esta linha
+                child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    children: [
+                      // Opção de tema
+                      ListTile(
+                        leading: Icon(
+                          _getThemeIcon(),
+                          color: Theme.of(context).iconTheme.color,
                         ),
-                      ),
-                      subtitle: Text(
-                        _getThemeText(),
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.grey[600],
-                          fontSize: 12,
+                        title: Text(
+                          'Tema',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.grey[900],
+                          ),
                         ),
+                        subtitle: Text(
+                          _getThemeText(),
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                        trailing: Icon(
+                          CupertinoIcons.chevron_right,
+                          color: Colors.grey[600],
+                          size: 16,
+                        ),
+                        onTap: () => _showThemeSelector(context),
+                        splashColor: ThemeManager.accentColor.withOpacity(0.3),
+                        visualDensity: VisualDensity.compact,
                       ),
-                      trailing: Icon(
-                        CupertinoIcons.chevron_right,
-                        color: Colors.grey[600],
-                        size: 16,
-                      ),
-                      onTap: () => _showThemeSelector(context),
-                    ),
-                    const Divider(height: 1, color: Colors.grey),
+                      const Divider(height: 1, color: Colors.grey),
 
-                    ListTile(
-                      leading: Icon(
-                        CupertinoIcons.paintbrush,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
-                      title: Text(
-                        'Cor de Destaque',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.grey[900],
+                      // Opção Cor de Destaque
+                      ListTile(
+                        leading: Icon(
+                          CupertinoIcons.paintbrush,
+                          color: Theme.of(context).iconTheme.color,
                         ),
-                      ),
-                      trailing: Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: ThemeManager.accentColor,
-                          borderRadius: BorderRadius.circular(12),
+                        title: Text(
+                          'Cor de Destaque',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.grey[900],
+                          ),
                         ),
+                        trailing: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: ThemeManager.accentColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onTap: () => _showColorPicker(context),
+                        splashColor: ThemeManager.accentColor.withOpacity(0.3),
+                        visualDensity: VisualDensity.compact,
                       ),
-                      onTap: () => _showColorPicker(context),
-                    ),
-                    const Divider(height: 1, color: Colors.grey),
+                      const Divider(height: 1, color: Colors.grey),
 
-                    ListTile(
-                      leading: Icon(
-                        CupertinoIcons.calendar,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
-                      title: Text(
-                        'Formato de data',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.grey[900],
+                      // Opção Formato de Data
+                      ListTile(
+                        leading: Icon(
+                          CupertinoIcons.calendar,
+                          color: Theme.of(context).iconTheme.color,
                         ),
-                      ),
-                      subtitle: FutureBuilder<String>(
-                        future: DateFormatManager.getDateFormat(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            final dateFormat = snapshot.data!;
+                        title: Text(
+                          'Formato de data',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.grey[900],
+                          ),
+                        ),
+                        subtitle: FutureBuilder<String>(
+                          future: DateFormatManager.getDateFormat(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final dateFormat = snapshot.data!;
+                              return Text(
+                                _formatName(dateFormat),
+                                style: TextStyle(
+                                  color:
+                                      isDark
+                                          ? Colors.white70
+                                          : Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              );
+                            }
                             return Text(
-                              _formatName(dateFormat),
+                              'Carregando...',
                               style: TextStyle(
                                 color:
                                     isDark ? Colors.white70 : Colors.grey[600],
                                 fontSize: 12,
                               ),
                             );
-                          }
-                          return Text(
-                            'Carregando...',
-                            style: TextStyle(
-                              color: isDark ? Colors.white70 : Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          );
-                        },
-                      ),
-                      trailing: Icon(
-                        CupertinoIcons.chevron_right,
-                        color: Colors.grey[600],
-                        size: 16,
-                      ),
-                      onTap: () => _showDateFormatSelector(context),
-                    ),
-                    const Divider(height: 1, color: Colors.grey),
-                    ListTile(
-                      leading: Icon(
-                        CupertinoIcons.clock,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
-                      title: Text(
-                        'Formato de hora',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.grey[900],
+                          },
                         ),
+                        trailing: Icon(
+                          CupertinoIcons.chevron_right,
+                          color: Colors.grey[600],
+                          size: 16,
+                        ),
+                        onTap: () => _showDateFormatSelector(context),
+                        splashColor: ThemeManager.accentColor.withOpacity(0.3),
+                        visualDensity: VisualDensity.compact,
                       ),
-                      subtitle: FutureBuilder<String>(
-                        future: DateFormatManager.getTimeFormat(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            final timeFormat = snapshot.data!;
+                      const Divider(height: 1, color: Colors.grey),
+
+                      // Opção Formato de Hora
+                      ListTile(
+                        leading: Icon(
+                          CupertinoIcons.clock,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        title: Text(
+                          'Formato de hora',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.grey[900],
+                          ),
+                        ),
+                        subtitle: FutureBuilder<String>(
+                          future: DateFormatManager.getTimeFormat(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final timeFormat = snapshot.data!;
+                              return Text(
+                                _formatName(timeFormat),
+                                style: TextStyle(
+                                  color:
+                                      isDark
+                                          ? Colors.white70
+                                          : Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              );
+                            }
                             return Text(
-                              _formatName(timeFormat),
+                              'Carregando...',
                               style: TextStyle(
                                 color:
                                     isDark ? Colors.white70 : Colors.grey[600],
                                 fontSize: 12,
                               ),
                             );
-                          }
-                          return Text(
-                            'Carregando...',
-                            style: TextStyle(
-                              color: isDark ? Colors.white70 : Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          );
-                        },
+                          },
+                        ),
+                        trailing: Icon(
+                          CupertinoIcons.chevron_right,
+                          color: Colors.grey[600],
+                          size: 16,
+                        ),
+                        onTap: () => _showTimeFormatSelector(context),
+                        splashColor: ThemeManager.accentColor.withOpacity(0.3),
+                        visualDensity: VisualDensity.compact,
                       ),
-                      trailing: Icon(
-                        CupertinoIcons.chevron_right,
-                        color: Colors.grey[600],
-                        size: 16,
-                      ),
-                      onTap: () => _showTimeFormatSelector(context),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+
+              // Seção Atualizações
               const SizedBox(height: 24),
               Text(
                 'Atualizações',
@@ -223,24 +248,32 @@ class _SettingsPageState extends State<SettingsPage> {
                   color: isDark ? Colors.grey[900] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(
-                        CupertinoIcons.arrow_clockwise,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
-                      title: Text(
-                        'Verificar Atualizações',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.grey[900],
+                clipBehavior: Clip.hardEdge,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          CupertinoIcons.arrow_clockwise,
+                          color: Theme.of(context).iconTheme.color,
                         ),
+                        title: Text(
+                          'Verificar Atualizações',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.grey[900],
+                          ),
+                        ),
+                        onTap: () => _checkForUpdatesManually(context),
+                        splashColor: ThemeManager.accentColor.withOpacity(0.3),
+                        visualDensity: VisualDensity.compact,
                       ),
-                      onTap: () => _checkForUpdatesManually(context),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+
+              // Seção Sobre
               const SizedBox(height: 24),
               Text(
                 'Sobre',
@@ -256,34 +289,40 @@ class _SettingsPageState extends State<SettingsPage> {
                   color: isDark ? Colors.grey[900] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(
-                        CupertinoIcons.info_circle_fill,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
-                      title: Text(
-                        'Sobre o Aplicativo',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.grey[900],
+                clipBehavior: Clip.hardEdge,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          CupertinoIcons.info_circle_fill,
+                          color: Theme.of(context).iconTheme.color,
                         ),
-                      ),
-                      trailing: Icon(
-                        CupertinoIcons.chevron_right,
-                        color: Colors.grey[600],
-                        size: 16,
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AboutPage(),
+                        title: Text(
+                          'Sobre o Aplicativo',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.grey[900],
                           ),
-                        );
-                      },
-                    ),
-                  ],
+                        ),
+                        trailing: Icon(
+                          CupertinoIcons.chevron_right,
+                          color: Colors.grey[600],
+                          size: 16,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AboutPage(),
+                            ),
+                          );
+                        },
+                        splashColor: ThemeManager.accentColor.withOpacity(0.3),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

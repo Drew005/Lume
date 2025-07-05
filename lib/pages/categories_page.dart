@@ -188,8 +188,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     hintText: 'Nome da categoria',
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
-                  onSubmitted: (newName) {
-                    _updateCategory(category, newName);
+                  onSubmitted: (newName) async {
+                    await _updateCategory(category, newName);
                     _focusNodes[category]!.unfocus();
                   },
                 ),
@@ -259,7 +259,20 @@ class _CategoriesPageState extends State<CategoriesPage> {
               TextButton(
                 onPressed: () async {
                   if (_newCategoryController.text.trim().isNotEmpty) {
-                    await _addCategory(_newCategoryController.text.trim());
+                    final category = _newCategoryController.text.trim();
+                    if (NotesManager.categoriesNotifier.value.contains(
+                      category,
+                    )) {
+                      IconSnackBar.show(
+                        context,
+                        snackBarType: SnackBarType.fail,
+                        label: 'A categoria "$category" já existe',
+                      );
+                      _newCategoryController.clear();
+                      return;
+                    }
+
+                    await _addCategory(category);
                     if (mounted) {
                       _newCategoryController.clear();
                       Navigator.pop(context);
@@ -277,6 +290,21 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   Future<void> _addCategory(String category) async {
+    category = category.trim();
+
+    if (NotesManager.categoriesNotifier.value.contains(category)) {
+      if (mounted) {
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'A categoria "$category" já existe',
+          labelTextStyle: TextStyle(color: Colors.white),
+          duration: const Duration(seconds: 2),
+        );
+      }
+      return;
+    }
+
     await NotesManager.addCategory(category);
     _editControllers[category] = TextEditingController(text: category);
   }
@@ -291,12 +319,16 @@ class _CategoriesPageState extends State<CategoriesPage> {
           context,
           snackBarType: SnackBarType.fail,
           label: 'A categoria "$newName" já existe',
+          labelTextStyle: TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
+      // Reverte para o nome original
+      _editControllers[oldName]!.text = oldName;
       return;
     }
 
+    // Restante do código para atualização bem-sucedida...
     final notesBox = Hive.box<Note>('notes');
     final notesToUpdate =
         notesBox.values.where((note) => note.category == oldName).toList();
@@ -316,9 +348,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
     final focusNode = _focusNodes.remove(oldName)!;
     _editControllers[newName] = controller;
     _focusNodes[newName] = focusNode;
-
-    // Atualiza o texto no controller
-    controller.text = newName;
   }
 
   Future<void> _confirmDeleteCategory(String category) async {

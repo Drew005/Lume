@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icon_snackbar/flutter_icon_snackbar.dart';
@@ -115,6 +117,7 @@ class _NotesListPageState extends State<NotesListPage>
             context,
             snackBarType: SnackBarType.fail,
             label: 'Nenhuma nota selecionada',
+            labelTextStyle: TextStyle(color: Colors.white),
             duration: const Duration(seconds: 2),
           );
         }
@@ -144,6 +147,7 @@ class _NotesListPageState extends State<NotesListPage>
           context,
           snackBarType: SnackBarType.fail,
           label: 'Erro ao compartilhar: ${e.toString()}',
+          labelTextStyle: TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
@@ -219,8 +223,9 @@ class _NotesListPageState extends State<NotesListPage>
       if (mounted) {
         IconSnackBar.show(
           context,
-          snackBarType: SnackBarType.alert,
+          snackBarType: SnackBarType.success,
           label: '${_selectedNotes.length} notas excluídas',
+          labelTextStyle: TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
@@ -232,6 +237,7 @@ class _NotesListPageState extends State<NotesListPage>
           context,
           snackBarType: SnackBarType.fail,
           label: 'Erro ao excluir notas: ${e.toString()}',
+          labelTextStyle: TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
@@ -242,67 +248,150 @@ class _NotesListPageState extends State<NotesListPage>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final category = await showDialog<String>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-            title: const Text('Mover para categoria'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4,
-                ),
-                child: ValueListenableBuilder<List<String>>(
-                  valueListenable: NotesManager.categoriesNotifier,
-                  builder: (context, categories, _) {
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: categories.length,
-                      itemBuilder: (context, index) {
-                        final category = categories[index];
-                        return ListTile(
-                          title: Text(
-                            category,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
+      builder: (context) {
+        final categories = NotesManager.categoriesNotifier.value;
+        return AlertDialog(
+          backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
+          title: const Text('Mover para categoria'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.4,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Lista de categorias com altura fixa
+                  SizedBox(
+                    height: min(
+                      categories.length * 48.0, // altura aproximada por item
+                      MediaQuery.of(context).size.height * 0.3,
+                    ),
+                    child: Stack(
+                      children: [
+                        ValueListenableBuilder<List<String>>(
+                          valueListenable: NotesManager.categoriesNotifier,
+                          builder: (context, categories, _) {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: categories.length,
+                              itemBuilder: (context, index) {
+                                final category = categories[index];
+                                return ListTile(
+                                  title: Text(
+                                    category,
+                                    style: TextStyle(
+                                      color:
+                                          isDark ? Colors.white : Colors.black,
+                                    ),
+                                  ),
+                                  onTap: () => Navigator.pop(context, category),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        // Gradiente no topo
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: IgnorePointer(
+                            child: Container(
+                              height: 10,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    isDark
+                                        ? Colors.grey[900]!
+                                        : Colors.grey[100]!,
+                                    Colors.transparent,
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
                             ),
                           ),
-                          onTap: () => Navigator.pop(context, category),
-                        );
-                      },
-                    );
-                  },
-                ),
+                        ),
+                        // Gradiente na base
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: IgnorePointer(
+                            child: Container(
+                              height: 10,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.transparent,
+                                    isDark
+                                        ? Colors.grey[900]!
+                                        : Colors.grey[100]!,
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Indicador visual de mais itens
+                  if (categories.length > 3)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Arraste para ver mais categorias',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
-            actions: [
-              // Botão "Gerenciar categorias" alinhado à esquerda
-              Center(
-                child: TextButton.icon(
-                  icon: Icon(
-                    CupertinoIcons.folder,
-                    size: 18,
-                    color: ThemeManager.accentColor,
-                  ),
-                  label: Text(
-                    'Gerenciar categorias',
-                    style: TextStyle(color: ThemeManager.accentColor),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context); // Fecha o diálogo atual
-                    _navigateToCategories(context);
-                  },
-                ),
-              ),
-              // Substitua o Spacer por um Container com largura flexível
-              Container(width: 16), // Espaçamento fixo
-              // Botão "Cancelar" alinhado à direita
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancelar', style: TextStyle(color: Colors.grey)),
-              ),
-            ],
           ),
+          actions: [
+            // Botão "Gerenciar categorias"
+            TextButton.icon(
+              icon: Icon(
+                CupertinoIcons.folder,
+                size: 18,
+                color: ThemeManager.accentColor,
+              ),
+              label: Text(
+                'Gerenciar categorias',
+                style: TextStyle(color: ThemeManager.accentColor),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                _navigateToCategories(context);
+              },
+            ),
+            // Espaçamento flexível
+            const Expanded(child: SizedBox.shrink()),
+            // Botão "Cancelar"
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        );
+      },
     );
 
     if (category != null) {
@@ -319,6 +408,7 @@ class _NotesListPageState extends State<NotesListPage>
             context,
             snackBarType: SnackBarType.alert,
             label: 'Notas movidas para $category',
+            labelTextStyle: TextStyle(color: Colors.white),
             duration: const Duration(seconds: 2),
           );
         }
@@ -329,6 +419,7 @@ class _NotesListPageState extends State<NotesListPage>
           context,
           snackBarType: SnackBarType.fail,
           label: 'Erro ao mover notas: ${e.toString()}',
+          labelTextStyle: TextStyle(color: Colors.white),
           duration: const Duration(seconds: 2),
         );
       }
@@ -642,6 +733,7 @@ class _NotesListPageState extends State<NotesListPage>
         context,
         snackBarType: SnackBarType.success,
         label: 'Nota atualizada com sucesso!',
+        labelTextStyle: TextStyle(color: Colors.white),
         duration: const Duration(seconds: 2),
       );
     }
@@ -661,6 +753,8 @@ class _NotesListPageState extends State<NotesListPage>
           context,
           snackBarType: SnackBarType.fail,
           label: 'Erro ao excluir: ${e.toString()}',
+          labelTextStyle: TextStyle(color: Colors.white),
+          duration: const Duration(seconds: 2),
         );
       }
     }
