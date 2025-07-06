@@ -316,52 +316,6 @@ class _NotesListPageState extends State<NotesListPage>
                             );
                           },
                         ),
-                        // Gradiente no topo
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          child: IgnorePointer(
-                            child: Container(
-                              height: 10,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    isDark
-                                        ? Colors.grey[900]!
-                                        : Colors.grey[100]!,
-                                    Colors.transparent,
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Gradiente na base
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: IgnorePointer(
-                            child: Container(
-                              height: 10,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.transparent,
-                                    isDark
-                                        ? Colors.grey[900]!
-                                        : Colors.grey[100]!,
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),

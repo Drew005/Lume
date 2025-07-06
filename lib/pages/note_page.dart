@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -57,6 +58,8 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
   bool _isCheckboxInteraction = false;
   bool _isCheckboxCooldown = false;
   Timer? _saveDebounceTimer;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  bool _hasInternetConnection = true;
 
   // ==========================================
   // LIFECYCLE METHODS
@@ -66,6 +69,10 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     super.initState();
     _initializeNote();
     WidgetsBinding.instance.addObserver(this);
+    _initConnectivity();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
   @override
@@ -84,6 +91,8 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     _focusNode.dispose();
 
     WidgetsBinding.instance.removeObserver(this);
+
+    _connectivitySubscription.cancel();
     super.dispose();
   }
 
@@ -129,6 +138,20 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
     } catch (_) {
       return quill.Document();
     }
+  }
+
+  Future<void> _initConnectivity() async {
+    final List<ConnectivityResult> connectivityResult =
+        await Connectivity().checkConnectivity();
+    _updateConnectionStatus(connectivityResult);
+  }
+
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
+    setState(() {
+      _hasInternetConnection =
+          results.isNotEmpty &&
+          results.any((result) => result != ConnectivityResult.none);
+    });
   }
 
   // ==========================================
@@ -734,9 +757,15 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
                 const SizedBox(width: 2),
                 IconButton(
                   icon: const Icon(Icons.translate, size: 24),
-                  onPressed: _translateWithML,
-                  tooltip: 'Traduzir texto selecionado',
-                  color: Theme.of(context).colorScheme.onSurface,
+                  onPressed: _hasInternetConnection ? _translateWithML : null,
+                  tooltip:
+                      _hasInternetConnection
+                          ? 'Traduzir texto selecionado'
+                          : 'Sem conexão com a internet',
+                  color:
+                      _hasInternetConnection
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Colors.grey,
                 ),
                 const SizedBox(width: 8),
               ],
@@ -814,6 +843,18 @@ class _NotePageState extends State<NotePage> implements WidgetsBindingObserver {
   }
 
   Future<void> _translateWithML() async {
+    if (!_hasInternetConnection) {
+      if (mounted) {
+        IconSnackBar.show(
+          context,
+          snackBarType: SnackBarType.fail,
+          label: 'Sem conexão com a internet',
+          duration: const Duration(seconds: 2),
+        );
+      }
+      return;
+    }
+
     final selectedText = _getSelectedText();
     if (selectedText.isEmpty) {
       if (mounted) {
