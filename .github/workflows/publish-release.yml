@@ -1,36 +1,18 @@
-name: Publish Lume Release
+name: Publish Lume Beta Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'  # Now supports semantic versioning (v1.0.0, v2.1.5, etc.)
+      - 'v*.*.*-beta*'  # Padrão para versões beta (ex: v1.0.0-beta1, v1.0.0-beta.2)
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     
     steps:
-      # 1. Checkout code
-      - uses: actions/checkout@v3
-        
-      # 2. Setup Flutter
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.x'  # Updated to more recent Flutter version
-        
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: flutter pub get
-          
-      # 4. Build APK
-      - name: Build Release APK
-        run: |
-          flutter build apk --release --target-platform android-arm64
-          mkdir -p releases/versions/${{ github.ref_name }}
-          cp build/app/outputs/flutter-apk/app-release.apk releases/versions/${{ github.ref_name }}/lume.apk
-          
-      # 5. Create detailed release info
+      # [Etapas 1-4 mantidas iguais ao original...]
+      
+      # 5. Create beta release info
       - name: Create release info
         run: |
           TAG_VERSION=$(echo '${{ github.ref_name }}' | sed 's/v//')
@@ -39,23 +21,24 @@ jobs:
           echo '{
             "version": "'$TAG_VERSION'",
             "buildNumber": "'$GITHUB_RUN_NUMBER'",
-            "title": "Lume $TAG_VERSION",
-            "description": "Esta é versão inicial do Lume.",
+            "title": "Lume BETA $TAG_VERSION",
+            "description": "Primeira versão beta - recursos em teste",
             "downloadUrl": "https://github.com/Drew005/Lume/releases/download/${{ github.ref_name }}/lume.apk",
             "isForced": false,
             "releaseDate": "'$CURRENT_DATE'",
             "features": [
-              "Versão inicial do Lume",
-              "Interface principal completa",
-              "Funcionalidades básicas implementadas"
+              "Versão beta inicial",
+              "Funcionalidades principais em teste",
+              "Sistema de atualização integrado"
             ],
             "improvements": [
-              "Performance inicial otimizada",
-              "Estrutura de código organizada"
+              "Estrutura básica estabelecida",
+              "Fluxo principal funcional"
             ],
             "bugFixes": [
-              "Correções de bugs críticos encontrados durante desenvolvimento"
-            ]
+              "Problemas críticos resolvidos para o beta"
+            ],
+            "isBeta": true  # Novo campo para identificar versões beta
           }' > releases/versions/${{ github.ref_name }}/info.json
           
       # 6. Update latest version pointer

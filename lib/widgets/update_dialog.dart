@@ -73,6 +73,28 @@ class _UpdateDialogState extends State<UpdateDialog>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
 
+    if (widget.updateInfo.isBeta) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (ctx) => AlertDialog(
+                title: const Text("Versão Beta"),
+                content: const Text(
+                  "Esta é uma versão de testes. Pode conter bugs.",
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text("ENTENDI"),
+                  ),
+                ],
+              ),
+        );
+      });
+    }
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(16),
@@ -480,6 +502,7 @@ class UpdateInfo {
   final bool isForced;
   final String downloadUrl;
   final DateTime releaseDate;
+  final bool isBeta;
 
   const UpdateInfo({
     required this.title,
@@ -491,5 +514,6 @@ class UpdateInfo {
     required this.isForced,
     required this.downloadUrl,
     required this.releaseDate,
+    this.isBeta = false,
   });
 }
