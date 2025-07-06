@@ -5,6 +5,7 @@ import 'package:lume/pages/about_page.dart';
 import 'package:lume/pages/blank_page.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:lume/services/update_manager.dart' hide UpdateInfo;
+import 'package:lume/services/update_preferences.dart';
 import 'package:lume/widgets/update_dialog.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -268,6 +269,48 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         onTap: () => _checkForUpdatesManually(context),
                         splashColor: ThemeManager.accentColor.withOpacity(0.3),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      const Divider(height: 1, color: Colors.grey),
+                      ListTile(
+                        leading: Icon(
+                          CupertinoIcons.arrow_down_circle,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        title: Text(
+                          'Verificação automática',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.grey[900],
+                          ),
+                        ),
+                        subtitle: FutureBuilder<bool>(
+                          future: UpdatePreferences.isAutoUpdateEnabled(),
+                          builder: (context, snapshot) {
+                            return Text(
+                              snapshot.data ?? true ? 'Ativada' : 'Desativada',
+                              style: TextStyle(
+                                color:
+                                    isDark ? Colors.white70 : Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            );
+                          },
+                        ),
+                        trailing: FutureBuilder<bool>(
+                          future: UpdatePreferences.isAutoUpdateEnabled(),
+                          builder: (context, snapshot) {
+                            return CupertinoSwitch(
+                              value: snapshot.data ?? true,
+                              onChanged: (value) async {
+                                await UpdatePreferences.setAutoUpdateEnabled(
+                                  value,
+                                );
+                                setState(() {});
+                              },
+                              activeColor: ThemeManager.accentColor,
+                            );
+                          },
+                        ),
                         visualDensity: VisualDensity.compact,
                       ),
                     ],

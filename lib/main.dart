@@ -11,6 +11,7 @@ import 'package:lume/services/todos_manager.dart';
 import 'dart:io';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:lume/services/update_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -34,6 +35,8 @@ void main() async {
     final bool hasAcceptedTerms = prefs.getBool('hasAcceptedTerms') ?? false;
     final bool hasCompletedPreConfig =
         prefs.getBool('hasCompletedPreConfig') ?? false;
+
+    await UpdatePreferences.init();
 
     await _initializeNotifications();
     await _initializeHive();
@@ -262,6 +265,8 @@ class MyApp extends StatelessWidget {
 
   Future<void> _checkForUpdates(BuildContext context) async {
     await Future.delayed(const Duration(seconds: 1));
+    final autoUpdateEnabled = await UpdatePreferences.isAutoUpdateEnabled();
+    if (!autoUpdateEnabled) return;
 
     try {
       final updateInfo = await update_manager.UpdateManager.checkForUpdates();
