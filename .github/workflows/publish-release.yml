@@ -3,15 +3,35 @@ name: Publish Lume Beta Release
 on:
   push:
     tags:
-      - 'v*.*.*-beta*'  # Padrão para versões beta (ex: v1.0.0-beta1, v1.0.0-beta.2)
+      - 'v*.*.*-beta*'  # Matches v1.0.0-beta1, v2.1.0-beta.2, etc.
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     
     steps:
-      # [Etapas 1-4 mantidas iguais ao original...]
-      
+      # 1. Checkout code
+      - uses: actions/checkout@v3
+        
+      # 2. Setup Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '1.x'  # Specify your exact Flutter version
+          
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+          
+      # 4. Build APK with verification
+      - name: Build Release APK
+        run: |
+          flutter build apk --release --target-platform android-arm64
+          mkdir -p releases/versions/${{ github.ref_name }}
+          cp build/app/outputs/flutter-apk/app-release.apk releases/versions/${{ github.ref_name }}/lume.apk
+          echo "APK generated at: releases/versions/${{ github.ref_name }}/lume.apk"
+          ls -la releases/versions/${{ github.ref_name }}/
+          
       # 5. Create beta release info
       - name: Create release info
         run: |
@@ -22,9 +42,11 @@ jobs:
             "version": "'$TAG_VERSION'",
             "buildNumber": "'$GITHUB_RUN_NUMBER'",
             "title": "Lume BETA $TAG_VERSION",
-            "description": "Primeira versão beta - recursos em teste",
+            "description": "Esta versão beta contém novos recursos em teste. Por favor, reporte quaisquer problemas encontrados.",
             "downloadUrl": "https://github.com/Drew005/Lume/releases/download/${{ github.ref_name }}/lume.apk",
+            "alternateDownloadUrl": "https://raw.githubusercontent.com/Drew005/Lume/main/releases/versions/${{ github.ref_name }}/lume.apk",
             "isForced": false,
+            "isBeta": true,
             "releaseDate": "'$CURRENT_DATE'",
             "features": [
               "Versão beta inicial",
@@ -38,7 +60,11 @@ jobs:
             "bugFixes": [
               "Problemas críticos resolvidos para o beta"
             ],
-            "isBeta": true  # Novo campo para identificar versões beta
+            "knownIssues": [
+              "Algumas funcionalidades podem apresentar instabilidade",
+              "Performance em dispositivos antigos está sendo otimizada"
+            ],
+            "feedbackUrl": "https://github.com/Drew005/Lume/issues"
           }' > releases/versions/${{ github.ref_name }}/info.json
           
       # 6. Update latest version pointer
@@ -46,7 +72,8 @@ jobs:
         run: |
           echo '{
             "version": "'$(echo '${{ github.ref_name }}' | sed 's/v//')'",
-            "url": "https://raw.githubusercontent.com/Drew005/Lume/main/releases/versions/${{ github.ref_name }}/info.json"
+            "url": "https://raw.githubusercontent.com/Drew005/Lume/main/releases/versions/${{ github.ref_name }}/info.json",
+            "isBeta": true
           }' > releases/latest.json
           
       # 7. Create GitHub Release
@@ -57,18 +84,28 @@ jobs:
             releases/versions/${{ github.ref_name }}/lume.apk
             releases/versions/${{ github.ref_name }}/info.json
           tag_name: ${{ github.ref_name }}
+          prerelease: true
           body: |
-            ## Novidades na versão ${{ github.ref_name }}
+            ## Lume BETA ${{ github.ref_name }}
             
-            ### Novos Recursos
-            - Novo design da interface
-            - Suporte a temas escuros
-            - Nova funcionalidade X
+            ### ⚠️ Esta é uma versão beta ⚠️
+            **Aviso:** Esta versão contém funcionalidades em teste e pode conter bugs.
             
-            ### Melhorias
-            - Melhor desempenho na navegação
-            - Otimização de uso de memória
+            ### 📦 Recursos
+            - Versão beta inicial
+            - Funcionalidades principais em teste
+            - Sistema de atualização integrado
             
-            ### Correções
-            - Corrigido crash ao abrir configurações
-            - Resolvido problema de sincronização
+            ### 🛠 Melhorias
+            - Estrutura básica estabelecida
+            - Fluxo principal funcional
+            
+            ### 🐛 Correções Conhecidas
+            - Problemas críticos resolvidos para o beta
+            
+            ### 🔍 Problemas Conhecidos
+            - Algumas funcionalidades podem apresentar instabilidade
+            - Performance em dispositivos antigos está sendo otimizada
+            
+            ### 📝 Como Reportar Problemas
+            Por favor, abra uma issue em: https://github.com/Drew005/Lume/issues
