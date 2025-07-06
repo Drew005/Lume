@@ -40,22 +40,21 @@ jobs:
             "version": "'$TAG_VERSION'",
             "buildNumber": "'$GITHUB_RUN_NUMBER'",
             "title": "Lume $TAG_VERSION",
-            "description": "Esta atualização inclui melhorias de desempenho e correções de bugs.",
+            "description": "Esta é versão inicial do Lume.",
             "downloadUrl": "https://github.com/Drew005/Lume/releases/download/${{ github.ref_name }}/lume.apk",
             "isForced": false,
             "releaseDate": "'$CURRENT_DATE'",
             "features": [
-              "Novo design da interface",
-              "Suporte a temas escuros",
-              "Nova funcionalidade X"
+              "Versão inicial do Lume",
+              "Interface principal completa",
+              "Funcionalidades básicas implementadas"
             ],
             "improvements": [
-              "Melhor desempenho na navegação",
-              "Otimização de uso de memória"
+              "Performance inicial otimizada",
+              "Estrutura de código organizada"
             ],
             "bugFixes": [
-              "Corrigido crash ao abrir configurações",
-              "Resolvido problema de sincronização"
+              "Correções de bugs críticos encontrados durante desenvolvimento"
             ]
           }' > releases/versions/${{ github.ref_name }}/info.json
           
