@@ -8,6 +8,9 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
     
     steps:
       # 1. Checkout code
@@ -83,6 +86,8 @@ jobs:
       # 7. Create GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
             releases/versions/${{ github.ref_name }}/lume.apk
