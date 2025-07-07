@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0-beta1",
+  "buildNumber": "1",
+  "title": "Lume Beta 1",
+  "description": "Esta é a primeira versão beta para testes. Ajude-nos reportando bugs e sugerindo melhorias!",
+  "downloadUrl": "https://github.com/Drew005/Lume/releases/download/v1.0.0-beta1/lume.apk",
+  "isForced": false,
+  "isBeta": true,
+  "releaseDate": "2025-06-06",
+  "features": [
+    "Sistema básico de funcionamento",
+    "Interface principal completa",
+    "Mecanismo de atualização integrado"
+  ],
+  "improvements": [
+    "Performance inicial otimizada",
+    "Estrutura de código preparada para evolução"
+  ],
+  "bugFixes": [
+    "Problemas críticos resolvidos para lançamento beta"
+  ],
+  "knownIssues": [
+    "Algumas funcionalidades podem instabilizar",
+    "Performance em dispositivos antigos precisa ser melhorada"
+  ],
+  "feedbackChannel": "https://github.com/Drew005/Lume/issues"
+}
