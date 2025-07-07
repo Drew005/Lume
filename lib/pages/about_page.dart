@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:lume/services/theme_manager.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatelessWidget {
@@ -48,19 +49,24 @@ class AboutPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Lume',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  Text(
-                    'Versão $version',
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.grey[600],
-                    ),
+                  FutureBuilder<PackageInfo>(
+                    future: PackageInfo.fromPlatform(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Text(
+                          'Versão ${snapshot.data!.version}${snapshot.data!.buildNumber.isNotEmpty ? '+${snapshot.data!.buildNumber}' : ''}',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.grey[600],
+                          ),
+                        );
+                      }
+                      return Text(
+                        'Versão ...',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.grey[600],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -113,12 +119,11 @@ class AboutPage extends StatelessWidget {
                       color: Colors.grey[600],
                       size: 16,
                     ),
-                    onTap:
-                        () => _showMarkdownDialog(
-                          context,
-                          'assets/TERMS.md',
-                          'Termos de Uso',
-                        ),
+                    onTap: () => _showMarkdownDialog(
+                      context,
+                      'assets/TERMS.md',
+                      'Termos de Uso',
+                    ),
                     //_launchUrl('https://seusite.com/termos'),
                   ),
                   const Divider(height: 1, color: Colors.grey),
@@ -140,12 +145,11 @@ class AboutPage extends StatelessWidget {
                       color: Colors.grey[600],
                       size: 16,
                     ),
-                    onTap:
-                        () => _showMarkdownDialog(
-                          context,
-                          'assets/PRIVACY.md',
-                          'Política de Privacidade',
-                        ),
+                    onTap: () => _showMarkdownDialog(
+                      context,
+                      'assets/PRIVACY.md',
+                      'Política de Privacidade',
+                    ),
                     //_launchUrl('https://seusite.com/privacidade'),
                   ),
                 ],
@@ -168,11 +172,8 @@ class AboutPage extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.mail),
                   color: Theme.of(context).iconTheme.color,
-                  onPressed:
-                      () => _launchUrl(
-                        context,
-                        'mailto:suporte.lume@protonmail.com',
-                      ),
+                  onPressed: () =>
+                      _launchUrl(context, 'mailto:suporte.lume@protonmail.com'),
                 ),
               ],
             ),
@@ -258,35 +259,33 @@ class AboutPage extends StatelessWidget {
                           padding: const EdgeInsets.all(16.0),
                           child: Markdown(
                             data: snapshot.data!,
-                            styleSheet: MarkdownStyleSheet.fromTheme(
-                              Theme.of(context),
-                            ).copyWith(
-                              p: TextStyle(
-                                fontSize: 14,
-                                color:
-                                    Theme.of(
+                            styleSheet:
+                                MarkdownStyleSheet.fromTheme(
+                                  Theme.of(context),
+                                ).copyWith(
+                                  p: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(
                                       context,
                                     ).textTheme.bodyMedium?.color,
-                                height: 1.5,
-                              ),
-                              h1: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    Theme.of(
+                                    height: 1.5,
+                                  ),
+                                  h1: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(
                                       context,
                                     ).textTheme.titleLarge?.color,
-                              ),
-                              h2: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    Theme.of(
+                                  ),
+                                  h2: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(
                                       context,
                                     ).textTheme.titleLarge?.color,
-                              ),
-                              a: TextStyle(color: ThemeManager.accentColor),
-                            ),
+                                  ),
+                                  a: TextStyle(color: ThemeManager.accentColor),
+                                ),
                             shrinkWrap: false,
                             onTapLink: (text, href, title) {
                               if (href != null) {

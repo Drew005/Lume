@@ -154,10 +154,9 @@ class _SettingsPageState extends State<SettingsPage> {
                               return Text(
                                 _formatName(dateFormat),
                                 style: TextStyle(
-                                  color:
-                                      isDark
-                                          ? Colors.white70
-                                          : Colors.grey[600],
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.grey[600],
                                   fontSize: 12,
                                 ),
                               );
@@ -165,8 +164,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             return Text(
                               'Carregando...',
                               style: TextStyle(
-                                color:
-                                    isDark ? Colors.white70 : Colors.grey[600],
+                                color: isDark
+                                    ? Colors.white70
+                                    : Colors.grey[600],
                                 fontSize: 12,
                               ),
                             );
@@ -203,10 +203,9 @@ class _SettingsPageState extends State<SettingsPage> {
                               return Text(
                                 _formatName(timeFormat),
                                 style: TextStyle(
-                                  color:
-                                      isDark
-                                          ? Colors.white70
-                                          : Colors.grey[600],
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.grey[600],
                                   fontSize: 12,
                                 ),
                               );
@@ -214,8 +213,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             return Text(
                               'Carregando...',
                               style: TextStyle(
-                                color:
-                                    isDark ? Colors.white70 : Colors.grey[600],
+                                color: isDark
+                                    ? Colors.white70
+                                    : Colors.grey[600],
                                 fontSize: 12,
                               ),
                             );
@@ -289,8 +289,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             return Text(
                               snapshot.data ?? true ? 'Ativada' : 'Desativada',
                               style: TextStyle(
-                                color:
-                                    isDark ? Colors.white70 : Colors.grey[600],
+                                color: isDark
+                                    ? Colors.white70
+                                    : Colors.grey[600],
                                 fontSize: 12,
                               ),
                             );
@@ -408,153 +409,140 @@ class _SettingsPageState extends State<SettingsPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder:
-          (context) => Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Selecionar Tema',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Opção Sistema
-                ListTile(
-                  leading: Icon(
-                    MdiIcons.brightnessAuto,
-                    color:
-                        ThemeManager.themeMode == ThemeMode.system
-                            ? ThemeManager.accentColor
-                            : (isDark ? Colors.white70 : Colors.grey[700]),
-                  ),
-                  title: Text(
-                    'Sistema',
-                    style: TextStyle(
-                      color:
-                          ThemeManager.themeMode == ThemeMode.system
-                              ? ThemeManager.accentColor
-                              : (isDark ? Colors.white : Colors.black),
-                      fontWeight:
-                          ThemeManager.themeMode == ThemeMode.system
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Segue as configurações do dispositivo',
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                  ),
-                  trailing:
-                      ThemeManager.themeMode == ThemeMode.system
-                          ? Icon(
-                            CupertinoIcons.checkmark_circle_fill,
-                            color: ThemeManager.accentColor,
-                          )
-                          : null,
-                  onTap: () {
-                    ThemeManager.setThemeMode(ThemeMode.system);
-                    setState(() {});
-                    Navigator.pop(context);
-                  },
-                ),
-
-                // Opção Claro
-                ListTile(
-                  leading: Icon(
-                    CupertinoIcons.sun_max_fill,
-                    color:
-                        ThemeManager.themeMode == ThemeMode.light
-                            ? ThemeManager.accentColor
-                            : (isDark ? Colors.white70 : Colors.grey[700]),
-                  ),
-                  title: Text(
-                    'Claro',
-                    style: TextStyle(
-                      color:
-                          ThemeManager.themeMode == ThemeMode.light
-                              ? ThemeManager.accentColor
-                              : (isDark ? Colors.white : Colors.black),
-                      fontWeight:
-                          ThemeManager.themeMode == ThemeMode.light
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                    ),
-                  ),
-                  trailing:
-                      ThemeManager.themeMode == ThemeMode.light
-                          ? Icon(
-                            CupertinoIcons.checkmark_circle_fill,
-                            color: ThemeManager.accentColor,
-                          )
-                          : null,
-                  onTap: () {
-                    ThemeManager.setThemeMode(ThemeMode.light);
-                    setState(() {});
-                    Navigator.pop(context);
-                  },
-                ),
-
-                // Opção Escuro
-                ListTile(
-                  leading: Icon(
-                    CupertinoIcons.moon_circle_fill,
-                    color:
-                        ThemeManager.themeMode == ThemeMode.dark
-                            ? ThemeManager.accentColor
-                            : (isDark ? Colors.white70 : Colors.grey[700]),
-                  ),
-                  title: Text(
-                    'Escuro',
-                    style: TextStyle(
-                      color:
-                          ThemeManager.themeMode == ThemeMode.dark
-                              ? ThemeManager.accentColor
-                              : (isDark ? Colors.white : Colors.black),
-                      fontWeight:
-                          ThemeManager.themeMode == ThemeMode.dark
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                    ),
-                  ),
-                  trailing:
-                      ThemeManager.themeMode == ThemeMode.dark
-                          ? Icon(
-                            CupertinoIcons.checkmark_circle_fill,
-                            color: ThemeManager.accentColor,
-                          )
-                          : null,
-                  onTap: () {
-                    ThemeManager.setThemeMode(ThemeMode.dark);
-                    setState(() {});
-                    Navigator.pop(context);
-                  },
-                ),
-
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+            Text(
+              'Selecionar Tema',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Opção Sistema
+            ListTile(
+              leading: Icon(
+                MdiIcons.brightnessAuto,
+                color: ThemeManager.themeMode == ThemeMode.system
+                    ? ThemeManager.accentColor
+                    : (isDark ? Colors.white70 : Colors.grey[700]),
+              ),
+              title: Text(
+                'Sistema',
+                style: TextStyle(
+                  color: ThemeManager.themeMode == ThemeMode.system
+                      ? ThemeManager.accentColor
+                      : (isDark ? Colors.white : Colors.black),
+                  fontWeight: ThemeManager.themeMode == ThemeMode.system
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                ),
+              ),
+              subtitle: Text(
+                'Segue as configurações do dispositivo',
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+              trailing: ThemeManager.themeMode == ThemeMode.system
+                  ? Icon(
+                      CupertinoIcons.checkmark_circle_fill,
+                      color: ThemeManager.accentColor,
+                    )
+                  : null,
+              onTap: () {
+                ThemeManager.setThemeMode(ThemeMode.system);
+                setState(() {});
+                Navigator.pop(context);
+              },
+            ),
+
+            // Opção Claro
+            ListTile(
+              leading: Icon(
+                CupertinoIcons.sun_max_fill,
+                color: ThemeManager.themeMode == ThemeMode.light
+                    ? ThemeManager.accentColor
+                    : (isDark ? Colors.white70 : Colors.grey[700]),
+              ),
+              title: Text(
+                'Claro',
+                style: TextStyle(
+                  color: ThemeManager.themeMode == ThemeMode.light
+                      ? ThemeManager.accentColor
+                      : (isDark ? Colors.white : Colors.black),
+                  fontWeight: ThemeManager.themeMode == ThemeMode.light
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                ),
+              ),
+              trailing: ThemeManager.themeMode == ThemeMode.light
+                  ? Icon(
+                      CupertinoIcons.checkmark_circle_fill,
+                      color: ThemeManager.accentColor,
+                    )
+                  : null,
+              onTap: () {
+                ThemeManager.setThemeMode(ThemeMode.light);
+                setState(() {});
+                Navigator.pop(context);
+              },
+            ),
+
+            // Opção Escuro
+            ListTile(
+              leading: Icon(
+                CupertinoIcons.moon_circle_fill,
+                color: ThemeManager.themeMode == ThemeMode.dark
+                    ? ThemeManager.accentColor
+                    : (isDark ? Colors.white70 : Colors.grey[700]),
+              ),
+              title: Text(
+                'Escuro',
+                style: TextStyle(
+                  color: ThemeManager.themeMode == ThemeMode.dark
+                      ? ThemeManager.accentColor
+                      : (isDark ? Colors.white : Colors.black),
+                  fontWeight: ThemeManager.themeMode == ThemeMode.dark
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                ),
+              ),
+              trailing: ThemeManager.themeMode == ThemeMode.dark
+                  ? Icon(
+                      CupertinoIcons.checkmark_circle_fill,
+                      color: ThemeManager.accentColor,
+                    )
+                  : null,
+              onTap: () {
+                ThemeManager.setThemeMode(ThemeMode.dark);
+                setState(() {});
+                Navigator.pop(context);
+              },
+            ),
+
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 
@@ -728,168 +716,145 @@ class _SettingsPageState extends State<SettingsPage> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-            insetPadding: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                    child: Text(
-                      'Selecione uma cor de destaque',
-                      style: TextStyle(
-                        color: isDark ? Colors.white : Colors.grey[900],
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children:
-                            colorCategories.entries.map((entry) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 8,
-                                        bottom: 8,
-                                      ),
-                                      child: Text(
-                                        entry.key,
-                                        style: TextStyle(
-                                          color:
-                                              isDark
-                                                  ? Colors.white70
-                                                  : Colors.grey[700],
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                    GridView.count(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      crossAxisCount:
-                                          screenWidth > 600
-                                              ? 8
-                                              : (screenWidth > 400 ? 6 : 4),
-                                      crossAxisSpacing: 10,
-                                      mainAxisSpacing: 10,
-                                      childAspectRatio: 1.0,
-                                      children:
-                                          entry.value.map((color) {
-                                            return GestureDetector(
-                                              onTap: () {
-                                                ThemeManager.setAccentColor(
-                                                  color,
-                                                );
-                                                setState(() {});
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: AnimatedContainer(
-                                                duration: const Duration(
-                                                  milliseconds: 200,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: color,
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color:
-                                                        ThemeManager.accentColor ==
-                                                                color
-                                                            ? (isDark
-                                                                ? Colors.white
-                                                                : Colors.black)
-                                                            : Colors
-                                                                .transparent,
-                                                    width:
-                                                        ThemeManager.accentColor ==
-                                                                color
-                                                            ? 2.5
-                                                            : 1.5,
-                                                  ),
-                                                  boxShadow: [
-                                                    if (ThemeManager
-                                                            .accentColor ==
-                                                        color)
-                                                      BoxShadow(
-                                                        color: color
-                                                            .withOpacity(0.7),
-                                                        blurRadius: 8,
-                                                        spreadRadius: 2,
-                                                      ),
-                                                  ],
-                                                ),
-                                                child:
-                                                    ThemeManager.accentColor ==
-                                                            color
-                                                        ? Center(
-                                                          child: Icon(
-                                                            Icons.check,
-                                                            size: 18,
-                                                            color:
-                                                                color.computeLuminance() >
-                                                                        0.5
-                                                                    ? Colors
-                                                                        .black
-                                                                    : Colors.white,
-                                                          ),
-                                                        )
-                                                        : null,
-                                              ),
-                                            );
-                                          }).toList(),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        backgroundColor:
-                            isDark ? Colors.grey[800] : Colors.grey[300],
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Cancelar',
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.grey[700],
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      builder: (context) => Dialog(
+        backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
+        insetPadding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                child: Text(
+                  'Selecione uma cor de destaque',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.grey[900],
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: colorCategories.entries.map((entry) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 8,
+                                bottom: 8,
+                              ),
+                              child: Text(
+                                entry.key,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.grey[700],
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: screenWidth > 600
+                                  ? 8
+                                  : (screenWidth > 400 ? 6 : 4),
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1.0,
+                              children: entry.value.map((color) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    ThemeManager.setAccentColor(color);
+                                    setState(() {});
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: ThemeManager.accentColor == color
+                                            ? (isDark
+                                                  ? Colors.white
+                                                  : Colors.black)
+                                            : Colors.transparent,
+                                        width: ThemeManager.accentColor == color
+                                            ? 2.5
+                                            : 1.5,
+                                      ),
+                                      boxShadow: [
+                                        if (ThemeManager.accentColor == color)
+                                          BoxShadow(
+                                            color: color.withOpacity(0.7),
+                                            blurRadius: 8,
+                                            spreadRadius: 2,
+                                          ),
+                                      ],
+                                    ),
+                                    child: ThemeManager.accentColor == color
+                                        ? Center(
+                                            child: Icon(
+                                              Icons.check,
+                                              size: 18,
+                                              color:
+                                                  color.computeLuminance() > 0.5
+                                                  ? Colors.black
+                                                  : Colors.white,
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: isDark
+                        ? Colors.grey[800]
+                        : Colors.grey[300],
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.grey[700],
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -1150,28 +1115,30 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            title: const Text('Verificando atualizações...'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text(
-                  'Por favor, aguarde...',
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
-              ],
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        title: const Text('Verificando atualizações...'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(
+              'Por favor, aguarde...',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
             ),
-          ),
+          ],
+        ),
+      ),
     );
 
     try {
-      final updateInfo = await UpdateManager.checkForUpdates();
+      final updateInfo = await UpdateManager.checkForUpdates(
+        includePrerelease: true, // Inclui versões beta
+        includeDraft: true, // Inclui drafts
+      );
       Navigator.of(context).pop(); // Fecha o diálogo de carregamento
 
       if (updateInfo == null) {
@@ -1181,12 +1148,13 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Você está atualizado!',
             version: 'Versão mais recente',
             description:
-                'Seu aplicativo está na versão mais recente disponível.',
+                'Seu aplicativo está na versão mais recente disponível.\n\n'
+                '**Nenhuma atualização necessária no momento.**',
             features: [],
             improvements: [],
             bugFixes: [],
             isForced: false,
-            downloadUrl: '', // URL vazia para indicar que não há atualização
+            downloadUrl: '',
             releaseDate: DateTime.now(),
           ),
         );

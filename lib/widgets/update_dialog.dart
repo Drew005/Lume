@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:lume/services/update_manager.dart';
 import 'package:lume/services/theme_manager.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UpdateDialog extends StatefulWidget {
   final UpdateInfo updateInfo;
@@ -50,12 +53,10 @@ class _UpdateDialogState extends State<UpdateDialog>
       CurvedAnimation(parent: _scaleController, curve: Curves.easeOutBack),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeOutQuint),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutQuint),
+        );
 
     _scaleController.forward();
     _slideController.forward();
@@ -78,19 +79,18 @@ class _UpdateDialogState extends State<UpdateDialog>
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder:
-              (ctx) => AlertDialog(
-                title: const Text("Versão Beta"),
-                content: const Text(
-                  "Esta é uma versão de testes. Pode conter bugs.",
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text("ENTENDI"),
-                  ),
-                ],
+          builder: (ctx) => AlertDialog(
+            title: const Text("Versão Beta"),
+            content: const Text(
+              "Esta é uma versão de testes. Pode conter bugs.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("ENTENDI"),
               ),
+            ],
+          ),
         );
       });
     }
@@ -104,27 +104,30 @@ class _UpdateDialogState extends State<UpdateDialog>
           position: _slideAnimation,
           child: Container(
             constraints: BoxConstraints(
-              maxHeight: size.height * 0.8,
-              maxWidth: size.width * 0.9,
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+              maxWidth: 500, // Adiciona largura máxima para melhor aparência
             ),
-            decoration: BoxDecoration(
+            child: Material(
               color: isDark ? Colors.grey[900] : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildHeader(isDark),
-                Flexible(child: _buildContent(isDark)),
-                _buildActions(isDark),
-              ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header fixo
+                  _buildHeader(isDark),
+
+                  // Conteúdo scrollável
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _buildContent(isDark),
+                    ),
+                  ),
+
+                  // Actions fixas
+                  _buildActions(isDark),
+                ],
+              ),
             ),
           ),
         ),
@@ -194,51 +197,81 @@ class _UpdateDialogState extends State<UpdateDialog>
   }
 
   Widget _buildContent(bool isDark) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.updateInfo.description,
-            style: TextStyle(
-              fontSize: 16,
-              height: 1.5,
-              color: isDark ? Colors.white70 : Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          if (widget.updateInfo.features.isNotEmpty) ...[
-            _buildSection(
-              title: '✨ Novos Recursos',
-              items: widget.updateInfo.features,
-              isDark: isDark,
-              color: Colors.green,
-            ),
-            const SizedBox(height: 20),
-          ],
-
-          if (widget.updateInfo.improvements.isNotEmpty) ...[
-            _buildSection(
-              title: '🚀 Melhorias',
-              items: widget.updateInfo.improvements,
-              isDark: isDark,
-              color: Colors.blue,
-            ),
-            const SizedBox(height: 20),
-          ],
-
-          if (widget.updateInfo.bugFixes.isNotEmpty) ...[
-            _buildSection(
-              title: '🐛 Correções',
-              items: widget.updateInfo.bugFixes,
-              isDark: isDark,
-              color: Colors.orange,
-            ),
-          ],
-        ],
+    final styleSheet = MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+      p: TextStyle(
+        fontSize: 16,
+        height: 1.5,
+        color: isDark ? Colors.white70 : Colors.grey[700],
       ),
+      h1: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: isDark ? Colors.white : Colors.black,
+      ),
+      h2: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: isDark ? Colors.white : Colors.black,
+      ),
+      h3: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: isDark ? Colors.white : Colors.black,
+      ),
+      a: TextStyle(
+        color: ThemeManager.accentColor,
+        decoration: TextDecoration.underline,
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 16),
+
+        // Descrição principal
+        MarkdownBody(
+          data: widget.updateInfo.description,
+          styleSheet: styleSheet,
+          shrinkWrap: true,
+        ),
+
+        const SizedBox(height: 24),
+
+        // Novos recursos
+        if (widget.updateInfo.features.isNotEmpty) ...[
+          _buildSection(
+            title: '✨ Novos Recursos',
+            items: widget.updateInfo.features,
+            isDark: isDark,
+            style: styleSheet,
+          ),
+          const SizedBox(height: 20),
+        ],
+
+        // Melhorias
+        if (widget.updateInfo.improvements.isNotEmpty) ...[
+          _buildSection(
+            title: '🚀 Melhorias',
+            items: widget.updateInfo.improvements,
+            isDark: isDark,
+            style: styleSheet,
+          ),
+          const SizedBox(height: 20),
+        ],
+
+        // Correções de bugs
+        if (widget.updateInfo.bugFixes.isNotEmpty) ...[
+          _buildSection(
+            title: '🐛 Correções',
+            items: widget.updateInfo.bugFixes,
+            isDark: isDark,
+            style: styleSheet,
+          ),
+          const SizedBox(height: 20),
+        ],
+      ],
     );
   }
 
@@ -246,10 +279,11 @@ class _UpdateDialogState extends State<UpdateDialog>
     required String title,
     required List<String> items,
     required bool isDark,
-    required Color color,
+    required MarkdownStyleSheet style,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           title,
@@ -261,27 +295,31 @@ class _UpdateDialogState extends State<UpdateDialog>
         ),
         const SizedBox(height: 12),
         Container(
+          width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: isDark ? Colors.grey[800]! : Colors.grey[100]!,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.2), width: 1),
+            border: Border.all(
+              color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+              width: 1,
+            ),
           ),
           child: Column(
-            children:
-                items.map((item) {
-                  return Padding(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: items
+                .map(
+                  (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          margin: const EdgeInsets.only(top: 6, right: 12),
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
+                        Text(
+                          '• ',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? Colors.white70 : Colors.grey[700],
+                            height: 1.6,
                           ),
                         ),
                         Expanded(
@@ -289,15 +327,16 @@ class _UpdateDialogState extends State<UpdateDialog>
                             item,
                             style: TextStyle(
                               fontSize: 14,
-                              height: 1.4,
                               color: isDark ? Colors.white70 : Colors.grey[700],
+                              height: 1.6,
                             ),
                           ),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
+                  ),
+                )
+                .toList(),
           ),
         ),
       ],
@@ -306,7 +345,7 @@ class _UpdateDialogState extends State<UpdateDialog>
 
   Widget _buildActions(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: Column(
         children: [
           if (widget.updateInfo.isForced)
@@ -389,19 +428,17 @@ class _UpdateDialogState extends State<UpdateDialog>
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed:
-                hasUpdate
-                    ? () {
-                      widget.onUpdateStarted?.call();
-                      UpdateManager.downloadUpdate(
-                        widget.updateInfo.downloadUrl,
-                      );
-                      Navigator.of(context).pop();
-                    }
-                    : null,
+            onPressed: hasUpdate
+                ? () {
+                    widget.onUpdateStarted?.call();
+                    UpdateManager.downloadUpdate(widget.updateInfo.downloadUrl);
+                    Navigator.of(context).pop();
+                  }
+                : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  hasUpdate ? ThemeManager.accentColor : Colors.grey,
+              backgroundColor: hasUpdate
+                  ? ThemeManager.accentColor
+                  : Colors.grey,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -481,13 +518,12 @@ class UpdateDialogHelper {
     showDialog(
       context: context,
       barrierDismissible: !updateInfo.isForced,
-      builder:
-          (context) => UpdateDialog(
-            updateInfo: updateInfo,
-            onUpdateStarted: onUpdate,
-            onUpdateSkipped: onSkip,
-            onUpdateLater: onLater,
-          ),
+      builder: (context) => UpdateDialog(
+        updateInfo: updateInfo,
+        onUpdateStarted: onUpdate,
+        onUpdateSkipped: onSkip,
+        onUpdateLater: onLater,
+      ),
     );
   }
 }

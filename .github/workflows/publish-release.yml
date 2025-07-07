@@ -49,7 +49,7 @@ jobs:
             "version": "'$TAG_VERSION'",
             "buildNumber": "'$GITHUB_RUN_NUMBER'",
             "title": "Lume BETA $TAG_VERSION",
-            "description": "Esta versão beta contém novos recursos em teste. Por favor, reporte quaisquer problemas encontrados.",
+            "description": "Esta versão beta contém recursos em teste. Por favor, reporte quaisquer problemas encontrados.",
             "downloadUrl": "https://github.com/Drew005/Lume/releases/download/${{ github.ref_name }}/lume.apk",
             "alternateDownloadUrl": "https://raw.githubusercontent.com/Drew005/Lume/main/releases/versions/${{ github.ref_name }}/lume.apk",
             "isForced": false,

@@ -97,17 +97,17 @@ Future<void> _requestNotificationPermissions(
 ) async {
   try {
     if (Platform.isAndroid) {
-      final notificationPolicyStatus =
-          await Permission.ignoreBatteryOptimizations.request();
+      final notificationPolicyStatus = await Permission
+          .ignoreBatteryOptimizations
+          .request();
       if (!notificationPolicyStatus.isGranted) {
         debugPrint('Battery optimization permission not granted');
       }
 
-      final androidPlugin =
-          flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin
-              >();
+      final androidPlugin = flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
 
       await androidPlugin?.requestNotificationsPermission();
 
@@ -174,7 +174,11 @@ class MyApp extends StatelessWidget {
             },
             onEnd: () async {
               debugPrint("SplashScreen End");
-              _checkForUpdates(context);
+              // Adicione um delay para garantir que o MaterialApp esteja pronto
+              await Future.delayed(const Duration(milliseconds: 500));
+              if (MyApp.navigatorKey.currentContext != null) {
+                _checkForUpdates(MyApp.navigatorKey.currentContext!);
+              }
             },
             childWidget: Center(
               child: Column(
@@ -230,20 +234,17 @@ class MyApp extends StatelessWidget {
           await prefs.setBool('hasAcceptedTerms', true);
           Navigator.of(MyApp.navigatorKey.currentContext!).pushReplacement(
             MaterialPageRoute(
-              builder:
-                  (context) => PreConfigPage(
-                    onComplete: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool('hasCompletedPreConfig', true);
-                      Navigator.of(
-                        MyApp.navigatorKey.currentContext!,
-                      ).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const HomePage(),
-                        ),
-                      );
-                    },
-                  ),
+              builder: (context) => PreConfigPage(
+                onComplete: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('hasCompletedPreConfig', true);
+                  Navigator.of(
+                    MyApp.navigatorKey.currentContext!,
+                  ).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                  );
+                },
+              ),
             ),
           );
         },
@@ -269,10 +270,14 @@ class MyApp extends StatelessWidget {
     if (!autoUpdateEnabled) return;
 
     try {
-      final updateInfo = await update_manager.UpdateManager.checkForUpdates();
+      final updateInfo = await update_manager.UpdateManager.checkForUpdates(
+        includePrerelease: true, // Inclui versões beta
+        includeDraft: true, // Inclui drafts
+      );
       if (updateInfo != null && context.mounted) {
+        // Use o NavigatorKey para garantir o contexto correto
         update_dialog.UpdateDialogHelper.showUpdateDialog(
-          context,
+          MyApp.navigatorKey.currentContext!,
           update_dialog.UpdateInfo(
             title: updateInfo.releaseName,
             version: updateInfo.version,
